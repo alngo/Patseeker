@@ -1,3 +1,6 @@
+/// Engulfing candlestick pattern.
+/// An Engulfing pattern occurs when a smaller candlestick is followed by a larger candlestick
+/// that completely engulfs the body of the previous one, indicating a potential reversal in price direction.
 use crate::domain::{candlestick::Candlestick, pattern::Pattern};
 
 pub struct Engulfing;

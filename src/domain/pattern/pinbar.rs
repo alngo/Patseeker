@@ -1,3 +1,6 @@
+/// Pinbar candlestick pattern detection.
+/// A Pinbar is characterized by a small body and a long wick on one side,
+/// indicating a potential reversal in price direction.
 use crate::domain::{candlestick::Candlestick, pattern::Pattern};
 
 pub struct Pinbar;
