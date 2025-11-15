@@ -1,3 +1,8 @@
+pub mod domain;
+pub mod application;
+pub mod infrastructure;
+pub mod interfaces;
+
 #[unsafe(no_mangle)]
 pub extern "system" fn add(left: u64, right: u64) -> u64 {
     left + right

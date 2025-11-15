@@ -27,6 +27,7 @@
 	    pkgsCross.mingwW64.stdenv.cc
 	    rustup
             openssl
+            clippy
             pkg-config
             eza
             fd
