@@ -1,24 +1,25 @@
-use crate::domain::{candlestick::Candlestick, shared::Rule};
+use crate::domain::shared::Rule;
 
-pub struct HighPriceMustBeGreaterThanLowPrice<'a> {
-    candlestick: &'a Candlestick,
+pub struct HighPriceMustBeGreaterThanLowPrice {
+    high: f64,
+    low: f64,
 }
 
-impl<'a> HighPriceMustBeGreaterThanLowPrice<'a> {
-    pub fn new(candlestick: &'a Candlestick) -> Self {
-        Self { candlestick }
+impl HighPriceMustBeGreaterThanLowPrice {
+    pub fn new(high: f64, low: f64) -> Self {
+        Self { high, low }
     }
 }
 
-impl<'a> Rule for HighPriceMustBeGreaterThanLowPrice<'a> {
+impl Rule for HighPriceMustBeGreaterThanLowPrice {
     fn is_valid(&self) -> bool {
-        self.candlestick.high > self.candlestick.low
+        self.high > self.low
     }
 
     fn message(&self) -> String {
         format!(
             "High price ({}) must be greater than low price ({}).",
-            self.candlestick.high, self.candlestick.low
+            self.high, self.low
         )
     }
 }

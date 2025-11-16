@@ -26,20 +26,18 @@ impl Check for Candlestick {}
 
 impl Candlestick {
     pub fn new(open: f64, high: f64, low: f64, close: f64, volume: f64, timestamp: u64) -> Result<Self, DomainError> {
-        let candlestick = Self {
+        Self::check_rule(HighPriceMustBeGreaterThanLowPrice::new(high, low))?;
+        Self::check_rule(OpenPriceMustBeWithinHighAndLowRange::new(open, high, low))?;
+        Self::check_rule(ClosePriceMustBeWithinHighAndLowRange::new(close, high, low))?;
+
+        Ok(Self {
             open,
             high,
             low,
             close,
             volume,
             timestamp,
-        };
-
-        Self::check_rule(HighPriceMustBeGreaterThanLowPrice::new(&candlestick))?;
-        Self::check_rule(OpenPriceMustBeWithinHighAndLowRange::new(&candlestick))?;
-        Self::check_rule(ClosePriceMustBeWithinHighAndLowRange::new(&candlestick))?;
-
-        Ok(candlestick)
+        })
     }
 
     pub fn open(&self) -> f64 { self.open }

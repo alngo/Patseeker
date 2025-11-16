@@ -26,6 +26,7 @@
           buildInputs = [
 	    pkgsCross.mingwW64.stdenv.cc
 	    rustup
+	    cargo-watch
             openssl
             clippy
             pkg-config
