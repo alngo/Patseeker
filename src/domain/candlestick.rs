@@ -1,9 +1,12 @@
 use super::shared::{CheckRule, DomainError};
 
-mod rules;
 mod events;
+mod rules;
 
-use rules::{ClosePriceMustBeWithinHighAndLowRange, HighPriceMustBeGreaterThanLowPrice, OpenPriceMustBeWithinHighAndLowRange};
+use rules::{
+    ClosePriceMustBeWithinHighAndLowRange, HighPriceMustBeGreaterThanLowPrice,
+    OpenPriceMustBeWithinHighAndLowRange,
+};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 enum Direction {
@@ -25,7 +28,14 @@ pub struct Candlestick {
 impl CheckRule for Candlestick {}
 
 impl Candlestick {
-    pub fn new(open: f64, high: f64, low: f64, close: f64, volume: f64, timestamp: u64) -> Result<Self, DomainError> {
+    pub fn new(
+        open: f64,
+        high: f64,
+        low: f64,
+        close: f64,
+        volume: f64,
+        timestamp: u64,
+    ) -> Result<Self, DomainError> {
         Self::check_rule(HighPriceMustBeGreaterThanLowPrice::new(high, low))?;
         Self::check_rule(OpenPriceMustBeWithinHighAndLowRange::new(open, high, low))?;
         Self::check_rule(ClosePriceMustBeWithinHighAndLowRange::new(close, high, low))?;
@@ -40,17 +50,37 @@ impl Candlestick {
         })
     }
 
-    pub fn open(&self) -> f64 { self.open }
-    pub fn high(&self) -> f64 { self.high }
-    pub fn low(&self) -> f64 { self.low }
-    pub fn close(&self) -> f64 { self.close }
-    pub fn volume(&self) -> f64 { self.volume }
-    pub fn timestamp(&self) -> u64 { self.timestamp }
+    pub fn open(&self) -> f64 {
+        self.open
+    }
+    pub fn high(&self) -> f64 {
+        self.high
+    }
+    pub fn low(&self) -> f64 {
+        self.low
+    }
+    pub fn close(&self) -> f64 {
+        self.close
+    }
+    pub fn volume(&self) -> f64 {
+        self.volume
+    }
+    pub fn timestamp(&self) -> u64 {
+        self.timestamp
+    }
 
-    pub fn body(&self) -> f64 { (self.close - self.open).abs() }
-    pub fn range(&self) -> f64 { self.high - self.low }
-    pub fn upper_wick(&self) -> f64 { self.high - self.open.max(self.close) }
-    pub fn lower_wick(&self) -> f64 { self.open.min(self.close) - self.low }
+    pub fn body(&self) -> f64 {
+        (self.close - self.open).abs()
+    }
+    pub fn range(&self) -> f64 {
+        self.high - self.low
+    }
+    pub fn upper_wick(&self) -> f64 {
+        self.high - self.open.max(self.close)
+    }
+    pub fn lower_wick(&self) -> f64 {
+        self.open.min(self.close) - self.low
+    }
     pub fn direction(&self) -> Direction {
         if self.close > self.open {
             Direction::Up
@@ -88,4 +118,3 @@ mod tests {
         assert_eq!(candlestick.direction(), Direction::Up);
     }
 }
-

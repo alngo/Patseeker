@@ -14,8 +14,7 @@ impl ClosePriceMustBeWithinHighAndLowRange {
 
 impl Rule for ClosePriceMustBeWithinHighAndLowRange {
     fn is_valid(&self) -> bool {
-        self.close >= self.low
-            && self.close <= self.high
+        self.close >= self.low && self.close <= self.high
     }
 
     fn message(&self) -> String {

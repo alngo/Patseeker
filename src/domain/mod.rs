@@ -1,3 +1,3 @@
 mod candlestick;
-mod shared;
 mod pattern;
+mod shared;

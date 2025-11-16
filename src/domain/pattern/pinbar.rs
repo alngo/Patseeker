@@ -34,9 +34,7 @@ mod tests {
 
     #[test]
     fn test_bullish_pinbar() {
-        let candles = vec![
-            Candlestick::new(1.5, 2.0, 1.0, 1.6, 0.0, 0).unwrap(),
-        ];
+        let candles = vec![Candlestick::new(1.5, 2.0, 1.0, 1.6, 0.0, 0).unwrap()];
 
         let pattern = Pinbar;
         assert!(pattern.matches(&candles));
@@ -44,9 +42,7 @@ mod tests {
 
     #[test]
     fn test_bearish_pinbar() {
-        let candles = vec![
-            Candlestick::new(1.3, 1.8, 0.3, 1.4, 0.0, 0).unwrap(),
-        ];
+        let candles = vec![Candlestick::new(1.3, 1.8, 0.3, 1.4, 0.0, 0).unwrap()];
 
         let pattern = Pinbar;
         assert!(pattern.matches(&candles));

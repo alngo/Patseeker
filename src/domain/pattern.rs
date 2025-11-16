@@ -1,7 +1,7 @@
 use super::candlestick::Candlestick;
 
-mod pinbar;
 mod engulfing;
+mod pinbar;
 
 pub trait Pattern {
     fn name(&self) -> &str;

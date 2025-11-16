@@ -14,8 +14,7 @@ impl OpenPriceMustBeWithinHighAndLowRange {
 
 impl Rule for OpenPriceMustBeWithinHighAndLowRange {
     fn is_valid(&self) -> bool {
-        self.open >= self.low
-            && self.open <= self.high
+        self.open >= self.low && self.open <= self.high
     }
 
     fn message(&self) -> String {

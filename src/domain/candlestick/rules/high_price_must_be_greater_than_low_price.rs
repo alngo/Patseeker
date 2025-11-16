@@ -23,4 +23,3 @@ impl Rule for HighPriceMustBeGreaterThanLowPrice {
         )
     }
 }
-
