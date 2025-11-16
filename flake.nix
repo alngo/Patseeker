@@ -25,8 +25,10 @@
         devShells.default = with pkgs; mkShell {
           buildInputs = [
 	    pkgsCross.mingwW64.stdenv.cc
-	    rustup
+            rustup
+            cargo-watch
             openssl
+            clippy
             pkg-config
             eza
             fd

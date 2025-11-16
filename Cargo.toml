@@ -8,3 +8,4 @@ name = "seek"
 crate-type = ["cdylib"]
 
 [dependencies]
+mockall = "0.13.1"
