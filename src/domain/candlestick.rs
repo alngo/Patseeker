@@ -1,6 +1,5 @@
 use super::shared::{CheckRule, DomainError};
 
-mod events;
 mod rules;
 
 use rules::{
@@ -9,7 +8,7 @@ use rules::{
 };
 
 #[derive(Debug, Clone, Copy, PartialEq)]
-enum Direction {
+pub enum Direction {
     Up,
     Down,
     Neutral,
