@@ -1,4 +1,4 @@
-use super::shared::{Check, DomainError};
+use super::shared::{CheckRule, DomainError};
 
 mod rules;
 mod events;
@@ -22,7 +22,7 @@ pub struct Candlestick {
     timestamp: u64,
 }
 
-impl Check for Candlestick {}
+impl CheckRule for Candlestick {}
 
 impl Candlestick {
     pub fn new(open: f64, high: f64, low: f64, close: f64, volume: f64, timestamp: u64) -> Result<Self, DomainError> {

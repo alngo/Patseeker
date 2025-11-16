@@ -4,7 +4,7 @@ use mockall::automock;
 use super::error::DomainError;
 
 #[allow(dead_code)]
-pub trait Check {
+pub trait CheckRule {
     fn check_rule(rule: impl Rule) -> Result<(), DomainError> {
         if !rule.is_valid() {
             return Err(DomainError {
@@ -29,7 +29,7 @@ mod domain_check_tests {
 
     struct ConcreteEntity;
 
-    impl Check for ConcreteEntity {}
+    impl CheckRule for ConcreteEntity {}
 
     #[test]
     fn test_check_rule_is_valid() {
