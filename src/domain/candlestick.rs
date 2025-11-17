@@ -14,6 +14,16 @@ pub enum Direction {
     Neutral,
 }
 
+/// Represents a candlestick in financial price data.
+/// A candlestick encapsulates the open, high, low, close prices,
+/// trading volume, and timestamp for a specific time period.
+/// # Fields
+/// - `open`: The opening price of the candlestick.
+/// - `high`: The highest price reached during the candlestick period.
+/// - `low`: The lowest price reached during the candlestick period.
+/// - `close`: The closing price of the candlestick.
+/// - `volume`: The trading volume during the candlestick period.
+/// - `timestamp`: The timestamp representing the start of the candlestick period.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Candlestick {
     open: f64,
