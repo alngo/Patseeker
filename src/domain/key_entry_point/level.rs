@@ -18,7 +18,6 @@ impl KeyEntryPoint for Level {
     }
 
     fn is_valid(&self, price: f64, _timestamp: i64) -> bool {
-        // Example: valid if current price is near the level
         (price - self.price).abs() < 0.0005
     }
 }
