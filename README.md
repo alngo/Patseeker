@@ -22,3 +22,5 @@ cargo build --target x86_64-pc-windows-gnu
 It is intended to be used along with Metatrader5
 
 ## License
+
+MIT License
