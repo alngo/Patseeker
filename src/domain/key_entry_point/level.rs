@@ -1,15 +1,12 @@
 use super::KeyEntryPoint;
 
-#[derive(Debug, Clone)]
-pub enum Kind {
-    Support,
-    Resistance,
-}
-
+/// Represents a specific price level.
+/// Used to determine if a given price aligns with this level.
+/// # Fields
+/// - `price`: The specific price level.
 #[derive(Debug, Clone)]
 pub struct Level {
     pub price: f64,
-    pub kind: Kind,
 }
 
 impl KeyEntryPoint for Level {
@@ -27,10 +24,7 @@ mod tests {
     use super::*;
     #[test]
     fn test_level_is_valid() {
-        let level = Level {
-            price: 1.2000,
-            kind: Kind::Support,
-        };
+        let level = Level { price: 1.2000 };
         assert!(level.is_valid(1.2003, 0));
         assert!(!level.is_valid(1.2010, 0));
     }

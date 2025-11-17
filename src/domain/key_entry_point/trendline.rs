@@ -1,17 +1,37 @@
 use super::KeyEntryPoint;
 
+/// Represents a price coordinate at a specific timestamp.
+/// Used for defining [Trendlines](Trendline).
+/// /// # Fields
+/// - `timestamp`: The time at which the price is recorded.
+/// - `price`: The price value at the given timestamp.
+#[derive(Debug, Clone)]
+pub struct Coordinate {
+    timestamp: i64,
+    price: f64,
+}
+
+/// Represents a trendline defined by two coordinates (points in time with associated prices).
+/// Used to determine if a given price at a specific timestamp aligns with the trendline.
+/// # Fields
+/// - `point_a`: The starting coordinate of the trendline.
+/// - `point_b`: The ending coordinate of the trendline.
 #[derive(Debug, Clone)]
 pub struct Trendline {
-    pub point_a: (i64, f64), // (timestamp, price)
-    pub point_b: (i64, f64),
+    point_a: Coordinate,
+    point_b: Coordinate,
 }
 
 impl Trendline {
+    pub fn new(point_a: Coordinate, point_b: Coordinate) -> Self {
+        // Rules:
+        // - point_a.timestamp must be less than point_b.timestamp
+        Self { point_a, point_b }
+    }
+
     fn calculate_price_at(&self, timestamp: i64) -> f64 {
-        let (t1, p1) = self.point_a;
-        let (t2, p2) = self.point_b;
-        let slope = (p2 - p1) / (t2 - t1) as f64;
-        p1 + slope * (timestamp - t1) as f64
+        let slope = (self.point_b.price - self.point_a.price) / (self.point_b.timestamp - self.point_a.timestamp) as f64;
+        self.point_a.price + slope * (timestamp - self.point_a.timestamp) as f64
     }
 }
 
@@ -31,9 +51,17 @@ mod tests {
     use super::*;
     #[test]
     fn test_trendline_is_valid() {
+        let point_a = Coordinate {
+            timestamp: 0,
+            price: 1.2000,
+        };
+        let point_b = Coordinate {
+            timestamp: 10,
+            price: 1.2100,
+        };
         let trendline = Trendline {
-            point_a: (0, 1.2000),
-            point_b: (10, 1.2100),
+            point_a,
+            point_b
         };
         assert!(trendline.is_valid(1.2050, 5));
         assert!(!trendline.is_valid(1.2070, 5));
