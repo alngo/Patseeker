@@ -5,3 +5,4 @@ mod pattern;
 mod price;
 mod shared;
 mod timestamp;
+mod timeframe;

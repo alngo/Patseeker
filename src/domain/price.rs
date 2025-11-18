@@ -1,75 +1,81 @@
-use rust_decimal::Decimal;
-use rust_decimal::prelude::{FromPrimitive, ToPrimitive};
+use rust_decimal::{dec, Decimal};
 
+use crate::domain::shared::{CheckRule, DomainError};
+
+mod rules;
+
+use rules::*;
+
+/// Represents a price with a specific tick size and currency.
+/// # Fields
+/// - `amount`: The monetary amount.
+/// - `tick_size`: The minimum price increment.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct Price(Decimal);
+pub struct Price {
+    amount: Decimal,
+    tick_size: Decimal,
+}
+
+impl CheckRule for Price {}
 
 impl Price {
-    pub fn new(value: Decimal) -> Self {
-        Price(value)
+    pub fn new(amount: Decimal, tick_size: Decimal) -> Result<Self, DomainError> {
+
+        Self::check_rule(AmountMustBeNonNegativeRule::new(amount))?;
+        Self::check_rule(TickSizeMustBePositiveRule::new(tick_size))?;
+        Self::check_rule(AmountMustBeMultipleOfTickSizeRule::new(amount, tick_size))?;
+
+        Ok(Self {
+            amount,
+            tick_size,
+        })
     }
 
-    pub fn value(&self) -> Decimal {
-        self.0
+    pub fn amount(&self) -> Decimal {
+        self.amount
     }
-}
 
-impl From<Decimal> for Price {
-    fn from(value: Decimal) -> Self {
-        Price::new(value)
-    }
-}
-
-impl From<Price> for Decimal {
-    fn from(value: Price) -> Self {
-        value.0
-    }
-}
-
-impl From<f64> for Price {
-    fn from(value: f64) -> Self {
-        Price(Decimal::from_f64(value).unwrap())
-    }
-}
-
-impl From<Price> for f64 {
-    fn from(value: Price) -> Self {
-        value.0.to_f64().unwrap()
+    pub fn tick_size(&self) -> Decimal {
+        self.tick_size
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use rust_decimal::prelude::FromPrimitive;
+    use rust_decimal::dec;
+
+    use super::Price;
 
     #[test]
-    fn test_price_from_decimal() {
-        let decimal = Decimal::from_f64(123.45).unwrap();
-        let price = Price::from(decimal);
-        assert_eq!(price.value(), decimal);
+    fn test_price_creation_success() {
+        let amount = dec!(100.00);
+        let tick_size = dec!(0.01);
+        let price = Price::new(amount, tick_size).unwrap();
+        assert_eq!(price.amount(), amount);
+        assert_eq!(price.tick_size(), tick_size);
     }
 
     #[test]
-    fn test_price_to_decimal() {
-        let decimal = Decimal::from_f64(123.45).unwrap();
-        let price = Price::new(decimal);
-        let converted_decimal: Decimal = price.into();
-        assert_eq!(converted_decimal, decimal);
+    fn test_price_creation_failure_negative_amount() {
+        let amount = dec!(-100.00);
+        let tick_size = dec!(0.01);
+        let result = Price::new(amount, tick_size);
+        assert!(result.is_err());
     }
 
     #[test]
-    fn test_price_from_f64() {
-        let value = 123.45_f64;
-        let price = Price::from(value);
-        assert_eq!(price.value(), Decimal::from_f64(value).unwrap());
+    fn test_price_creation_failure_non_positive_tick_size() {
+        let amount = dec!(100.00);
+        let tick_size = dec!(0.00);
+        let result = Price::new(amount, tick_size);
+        assert!(result.is_err());
     }
 
     #[test]
-    fn test_price_to_f64() {
-        let value = 123.45_f64;
-        let price = Price::from(value);
-        let converted_value: f64 = price.into();
-        assert_eq!(converted_value, value);
+    fn test_price_creation_failure_amount_not_multiple_of_tick_size() {
+        let amount = dec!(100.005);
+        let tick_size = dec!(0.01);
+        let result = Price::new(amount, tick_size);
+        assert!(result.is_err());
     }
 }
