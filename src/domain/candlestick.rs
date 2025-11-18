@@ -1,4 +1,4 @@
-use crate::domain::timestamp::Timestamp;
+use crate::domain::{shared::CheckRule, timestamp::Timestamp};
 
 use super::shared::DomainError;
 
@@ -15,6 +15,8 @@ pub enum Direction {
     Down,
     Neutral,
 }
+
+impl CheckRule for Candlestick {}
 
 /// Represents a candlestick in financial price data.
 /// A candlestick encapsulates the open, high, low, close prices,
@@ -33,7 +35,7 @@ pub struct Candlestick {
     low: f64,
     close: f64,
     volume: f64,
-    timestamp: Timestamp
+    timestamp: Timestamp,
 }
 
 impl Candlestick {
@@ -119,7 +121,8 @@ mod tests {
 
     #[test]
     fn test_candlestick_properties() {
-        let candlestick = Candlestick::new(100.0, 110.0, 90.0, 105.0, 1000.0, 1627849200.into()).unwrap();
+        let candlestick =
+            Candlestick::new(100.0, 110.0, 90.0, 105.0, 1000.0, 1627849200.into()).unwrap();
         assert_eq!(candlestick.body(), 5.0);
         assert_eq!(candlestick.range(), 20.0);
         assert_eq!(candlestick.upper_wick(), 5.0);

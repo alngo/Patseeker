@@ -30,7 +30,8 @@ impl Trendline {
     }
 
     fn calculate_price_at(&self, timestamp: i64) -> f64 {
-        let slope = (self.point_b.price - self.point_a.price) / (self.point_b.timestamp - self.point_a.timestamp) as f64;
+        let slope = (self.point_b.price - self.point_a.price)
+            / (self.point_b.timestamp - self.point_a.timestamp) as f64;
         self.point_a.price + slope * (timestamp - self.point_a.timestamp) as f64
     }
 }
@@ -59,10 +60,7 @@ mod tests {
             timestamp: 10,
             price: 1.2100,
         };
-        let trendline = Trendline {
-            point_a,
-            point_b
-        };
+        let trendline = Trendline { point_a, point_b };
         assert!(trendline.is_valid(1.2050, 5));
         assert!(!trendline.is_valid(1.2070, 5));
     }
