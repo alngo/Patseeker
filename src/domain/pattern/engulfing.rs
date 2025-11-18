@@ -40,8 +40,8 @@ mod tests {
     #[test]
     fn test_bullish_engulfing() {
         let candles = vec![
-            Candlestick::new(2.0, 2.5, 1.5, 1.8, 0.0, 0).unwrap(),
-            Candlestick::new(1.7, 2.6, 1.6, 2.4, 0.0, 0).unwrap(),
+            Candlestick::new(2.0, 2.5, 1.5, 1.8, 0.0, 0.into()).unwrap(),
+            Candlestick::new(1.7, 2.6, 1.6, 2.4, 0.0, 0.into()).unwrap(),
         ];
 
         let pattern = Engulfing;
@@ -51,8 +51,8 @@ mod tests {
     #[test]
     fn test_bearish_engulfing() {
         let candles = vec![
-            Candlestick::new(1.5, 2.0, 1.2, 1.9, 0.0, 0).unwrap(),
-            Candlestick::new(2.1, 2.3, 1.0, 1.0, 0.0, 0).unwrap(),
+            Candlestick::new(1.5, 2.0, 1.2, 1.9, 0.0, 0.into()).unwrap(),
+            Candlestick::new(2.1, 2.3, 1.0, 1.0, 0.0, 0.into()).unwrap(),
         ];
 
         let pattern = Engulfing;
@@ -62,8 +62,8 @@ mod tests {
     #[test]
     fn test_no_engulfing() {
         let candles = vec![
-            Candlestick::new(1.0, 1.5, 0.5, 1.4, 0.0, 0).unwrap(),
-            Candlestick::new(1.4, 1.6, 1.2, 1.3, 0.0, 0).unwrap(),
+            Candlestick::new(1.0, 1.5, 0.5, 1.4, 0.0, 0.into()).unwrap(),
+            Candlestick::new(1.4, 1.6, 1.2, 1.3, 0.0, 0.into()).unwrap(),
         ];
 
         let pattern = Engulfing;

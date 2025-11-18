@@ -1,4 +1,6 @@
-use super::shared::{CheckRule, DomainError};
+use crate::domain::timestamp::Timestamp;
+
+use super::shared::DomainError;
 
 mod rules;
 
@@ -31,10 +33,8 @@ pub struct Candlestick {
     low: f64,
     close: f64,
     volume: f64,
-    timestamp: u64,
+    timestamp: Timestamp
 }
-
-impl CheckRule for Candlestick {}
 
 impl Candlestick {
     pub fn new(
@@ -43,7 +43,7 @@ impl Candlestick {
         low: f64,
         close: f64,
         volume: f64,
-        timestamp: u64,
+        timestamp: Timestamp,
     ) -> Result<Self, DomainError> {
         Self::check_rule(HighPriceMustBeGreaterThanLowPrice::new(high, low))?;
         Self::check_rule(OpenPriceMustBeWithinHighAndLowRange::new(open, high, low))?;
@@ -74,7 +74,7 @@ impl Candlestick {
     pub fn volume(&self) -> f64 {
         self.volume
     }
-    pub fn timestamp(&self) -> u64 {
+    pub fn timestamp(&self) -> Timestamp {
         self.timestamp
     }
 
@@ -107,19 +107,19 @@ mod tests {
 
     #[test]
     fn test_candlestick_creation() {
-        let candlestick = Candlestick::new(100.0, 110.0, 90.0, 105.0, 1000.0, 1627849200);
+        let candlestick = Candlestick::new(100.0, 110.0, 90.0, 105.0, 1000.0, 1627849200.into());
         assert!(candlestick.is_ok());
     }
 
     #[test]
     fn test_invalid_candlestick_creation() {
-        let candlestick = Candlestick::new(100.0, 90.0, 95.0, 105.0, 1000.0, 1627849200);
+        let candlestick = Candlestick::new(100.0, 90.0, 95.0, 105.0, 1000.0, 1627849200.into());
         assert!(candlestick.is_err());
     }
 
     #[test]
     fn test_candlestick_properties() {
-        let candlestick = Candlestick::new(100.0, 110.0, 90.0, 105.0, 1000.0, 1627849200).unwrap();
+        let candlestick = Candlestick::new(100.0, 110.0, 90.0, 105.0, 1000.0, 1627849200.into()).unwrap();
         assert_eq!(candlestick.body(), 5.0);
         assert_eq!(candlestick.range(), 20.0);
         assert_eq!(candlestick.upper_wick(), 5.0);

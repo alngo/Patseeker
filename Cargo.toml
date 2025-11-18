@@ -8,4 +8,5 @@ name = "seek"
 crate-type = ["cdylib"]
 
 [dependencies]
+chrono = "0.4.42"
 mockall = "0.13.1"
