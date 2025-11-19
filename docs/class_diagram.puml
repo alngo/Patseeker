@@ -1,0 +1,100 @@
+@startuml
+' ===========================
+' Value Objects
+' ===========================
+
+class Symbol {
+  +Ticker : String
+  +Exchange : String
+}
+
+enum Timeframe {
+  Minute
+  Hour
+  Day
+  Week
+}
+
+class Timestamp {
+  +Instant : DateTime (UTC)
+}
+
+class Price {
+  +Amount : Decimal
+  +Currency : String
+  +TickSize : Decimal
+}
+
+class Candlestick {
+  +Timestamp : Timestamp
+  +Open : Decimal
+  +High : Decimal
+  +Low : Decimal
+  +Close : Decimal
+  +Volume : Integer
+}
+
+class Pattern {
+  +Type : String
+  +CandlestickRange : List<Timestamp>
+}
+
+class EntryPoint {
+  +Type : String
+  +Condition : String
+  +Value : Price
+}
+
+class Indicator {
+  +Type : String
+  +Parameters : Map
+  +Value : Decimal
+  +Timestamp : Timestamp
+}
+
+' ===========================
+' Aggregates
+' ===========================
+
+class Market {
+  +Symbol : Symbol
+  +Timeframe : Timeframe
+  +Candlesticks : List<Candlestick>
+  --
+  +producePatterns()
+  +produceEntryPoints()
+  +produceIndicators()
+}
+
+class Setup {
+  +SetupId : UUID
+  +Symbol : Symbol
+  +Timeframe : Timeframe
+  +Patterns : List<Pattern>
+  +KeyEntryPoints : List<EntryPoint>
+  +Indicators : List<Indicator>
+  +State : Enum {Created, Activated, Invalidated, Completed}
+  +Timestamp : Timestamp
+}
+
+' ===========================
+' Domain Service
+' ===========================
+
+class SetupFactory {
+  +createSetup(Market) : Setup
+}
+
+' ===========================
+' Relationships
+' ===========================
+
+Market "1" o-- "*" Candlestick
+SetupFactory --> Market
+SetupFactory --> Setup
+Setup "1" o-- "*" Pattern
+Setup "1" o-- "*" EntryPoint
+Setup "1" o-- "*" Indicator
+EntryPoint --> Price
+
+@enduml
