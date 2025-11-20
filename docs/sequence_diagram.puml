@@ -1,0 +1,28 @@
+@startuml
+actor Trader as T
+participant StrategySetup as SS
+participant MarketFeed as MF
+participant AnalyzerService as AS
+participant DecisionIntent as DI
+
+T -> SS: createSetup(Symbol, Timeframe, Indicators, Patterns, EntryPoints)
+SS -> SS: validateConfigs()
+SS -> SS: set State = Created
+
+T -> SS: activate()
+SS -> SS: checkConfigsValid()
+SS -> SS: set State = Activated
+SS --> T: SetupActivated event
+
+MF -> MF: addCandlestick(Candlestick)
+MF -> MF: validateMonotonicity\nvalidatePriceIsAlignedToTickSize
+MF --> AS: CandlestickAdded event
+
+AS -> SS: evaluate(Candlestick)
+SS -> SS: applyIndicators/Patterns/EntryPoints
+AS -> DI: createDecisionIntent(Symbol, Timeframe, result)
+DI -> DI: validate(Symbol constraints)\nset ValidUntil, Rationale
+
+AS --> T: DecisionIntent (EnterLong / Exit / etc.)
+@enduml
+
