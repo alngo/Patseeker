@@ -1,7 +1,20 @@
 @startuml
-' ===========================
-' Value Objects
-' ===========================
+package "Market Data Context" {
+
+class Market {
+  +MarketId: UUID
+  +Symbol : Symbol
+  +Timeframe : Timeframe
+  +Candlesticks : List<Candlestick>
+  +TickSize : Decimal
+  --
+  + addCandlestick(Candlestick)
+}
+
+note right of Market::addCandlestick
+  validateMonotonicity
+  validatePriceIsAlignedToTickSize
+end note
 
 class Symbol {
   +Ticker : String
@@ -9,92 +22,64 @@ class Symbol {
 }
 
 enum Timeframe {
-  Minute
-  Hour
-  Day
-  Week
-}
-
-class Timestamp {
-  +Instant : DateTime (UTC)
-}
-
-class Price {
-  +Amount : Decimal
-  +Currency : String
-  +TickSize : Decimal
+  M1
+  M5
+  M15
+  ...
 }
 
 class Candlestick {
   +Timestamp : Timestamp
-  +Open : Decimal
-  +High : Decimal
-  +Low : Decimal
-  +Close : Decimal
+  +Open : Price
+  +High : Price
+  +Low : Price
+  +Close : Price
   +Volume : Integer
 }
 
-class Pattern {
-  +Type : String
-  +CandlestickRange : List<Timestamp>
+Market "1" --> "*" Candlestick
+Market --> Symbol
+Market --> Timeframe
+
 }
 
-class EntryPoint {
-  +Type : String
-  +Condition : String
-  +Value : Price
-}
+package "Analysis Context" {
 
-class Indicator {
-  +Type : String
-  +Parameters : Map
-  +Value : Decimal
-  +Timestamp : Timestamp
-}
-
-' ===========================
-' Aggregates
-' ===========================
-
-class Market {
-  +Symbol : Symbol
-  +Timeframe : Timeframe
-  +Candlesticks : List<Candlestick>
-  --
-  +producePatterns()
-  +produceEntryPoints()
-  +produceIndicators()
+class AnalyzerService {
+  +evaluate(Market) : Setup
 }
 
 class Setup {
   +SetupId : UUID
-  +Symbol : Symbol
-  +Timeframe : Timeframe
+  +Symbol: Symbol
+  +Timeframe: Timeframe
+  +Timestamp : Timestamp
   +Patterns : List<Pattern>
   +KeyEntryPoints : List<EntryPoint>
   +Indicators : List<Indicator>
   +State : Enum {Created, Activated, Invalidated, Completed}
-  +Timestamp : Timestamp
 }
 
-' ===========================
-' Domain Service
-' ===========================
-
-class SetupFactory {
-  +createSetup(Market) : Setup
+class Pattern {
+  +Id: String
+  +Candlesticks: List<Candlestick>
 }
 
-' ===========================
-' Relationships
-' ===========================
+class EntryPoint {
+  +Id: String
+  +value: Decimal
+}
 
-Market "1" o-- "*" Candlestick
-SetupFactory --> Market
-SetupFactory --> Setup
+class Indicator {
+  +Id: String
+  +Parameters : Map
+}
+
+Setup "1" o-- "*" Indicator
 Setup "1" o-- "*" Pattern
 Setup "1" o-- "*" EntryPoint
-Setup "1" o-- "*" Indicator
-EntryPoint --> Price
+AnalyzerService ..> Market
+AnalyzerService ..> Setup
 
+}
 @enduml
