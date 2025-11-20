@@ -1,89 +1,28 @@
 @startuml
-' ===========================
-' Value Objects
-' ===========================
+actor Trader as T
+participant StrategySetup as SS
+participant MarketFeed as MF
+participant AnalyzerService as AS
+participant DecisionIntent as DI
 
-class Symbol {
-  +Ticker : String
-  +Exchange : String
-}
+T -> SS: createSetup(Symbol, Timeframe, Indicators, Patterns, EntryPoints)
+SS -> SS: validateConfigs()
+SS -> SS: set State = Created
 
-enum Timeframe {
-  Minute
-  Hour
-  Day
-  Week
-}
+T -> SS: activate()
+SS -> SS: checkConfigsValid()
+SS -> SS: set State = Activated
+SS --> T: SetupActivated event
 
-class Timestamp {
-  +Instant : DateTime (UTC)
-}
+MF -> MF: addCandlestick(Candlestick)
+MF -> MF: validateMonotonicity\nvalidatePriceIsAlignedToTickSize
+MF --> AS: CandlestickAdded event
 
-class Price {
-  +Amount : Decimal
-  +Currency : String
-  +TickSize : Decimal
-}
+AS -> SS: evaluate(Candlestick)
+SS -> SS: applyIndicators/Patterns/EntryPoints
+AS -> DI: createDecisionIntent(Symbol, Timeframe, result)
+DI -> DI: validate(Symbol constraints)\nset ValidUntil, Rationale
 
-class Candlestick {
-  +Timestamp : Timestamp
-  +Open : Decimal
-  +High : Decimal
-  +Low : Decimal
-  +Close : Decimal
-  +Volume : Integer
-}
+AS --> T: DecisionIntent (EnterLong / Exit / etc.)
+@enduml
 
-class Pattern {
-  +Type : String
-  +CandlestickRange : List<Timestamp>
-}
-
-class EntryPoint {
-  +Type : String
-  +Condition : String
-  +Value : Price
-}
-
-class Indicator {
-  +Type : String
-  +Parameters : Map
-  +Value : Decimal
-  +Timestamp : Timestamp
-}
-
-' ===========================
-' Aggregates
-' ===========================
-
-class Market {
-  +Symbol : Symbol
-  +Timeframe : Timeframe
-  +Candlesticks : List<Candlestick>
-  --
-  +producePatterns()
-  +produceEntryPoints()
-  +produceIndicators()
-}
-
-class Setup {
-  +SetupId : UUID
-  +Symbol : Symbol
-  +Timeframe : Timeframe
-  +Patterns : List<Pattern>
-  +KeyEntryPoints : List<EntryPoint>
-  +Indicators : List<Indicator>
-  +State : Enum {Created, Activated, Invalidated, Completed}
-  +Timestamp : Timestamp
-}
-
-' ===========================
-' Domain Service
-' ===========================
-
-class SetupFactory {
-  +createSetup(Market) : Setup
-}
-
-' ===========================
-' Relationships

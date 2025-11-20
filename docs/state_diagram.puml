@@ -1,0 +1,10 @@
+@startuml
+[*] --> Deactivated : default after creation
+
+Deactivated --> Activated : trader activates
+Activated --> Deactivated : trader deactivates
+
+Activated --> Invalidated : system detects violation/market condition
+Invalidated --> Deactivated : trader fixes configs and resets
+@enduml
+

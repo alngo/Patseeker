@@ -1,85 +1,116 @@
 @startuml
 package "Market Data Context" {
+  class MarketFeed {
+    +FeedId: UUID
+    +Symbol: Symbol
+    +Timeframe: Timeframe
+    +LastCandlestick: Candlestick
+    --
+    +addCandlestick(Candlestick)
+  }
 
-class Market {
-  +MarketId: UUID
-  +Symbol : Symbol
-  +Timeframe : Timeframe
-  +Candlesticks : List<Candlestick>
-  +TickSize : Decimal
-  --
-  + addCandlestick(Candlestick)
-}
+  note right of MarketFeed::addCandlestick
+    validateMonotonicity
+    validatePriceIsAlignedToTickSize
+  end note
 
-note right of Market::addCandlestick
-  validateMonotonicity
-  validatePriceIsAlignedToTickSize
-end note
+  class Symbol {
+    +Ticker: String
+    +Exchange: String
+    +Currency: String
+    +LotSize: Decimal
+    +TickSize: Decimal
+  }
 
-class Symbol {
-  +Ticker : String
-  +Exchange : String
-}
+  enum Timeframe {
+    M1
+    M5
+    M15
+    H1
+  }
 
-enum Timeframe {
-  M1
-  M5
-  M15
-  ...
-}
+  class Candlestick {
+    +Timestamp: Timestamp
+    +Open: Price
+    +High: Price
+    +Low: Price
+    +Close: Price
+    +Volume: Integer
+  }
 
-class Candlestick {
-  +Timestamp : Timestamp
-  +Open : Price
-  +High : Price
-  +Low : Price
-  +Close : Price
-  +Volume : Integer
-}
+  class Price {
+    +Amount: Decimal
+    --
+    +isAlignedToTickSize(Symbol): Boolean
+  }
 
-Market "1" --> "*" Candlestick
-Market --> Symbol
-Market --> Timeframe
+  class Timestamp {
+    +Instant: DateTime (UTC)
+  }
 
+  MarketFeed "1" o-- "*" Candlestick
+  MarketFeed --> Symbol
+  MarketFeed --> Timeframe
 }
 
 package "Analysis Context" {
+  class StrategySetup {
+    +SetupId: UUID
+    +Symbol: Symbol
+    +Timeframe: Timeframe
+    +Indicators: List<IndicatorConfig>
+    +Patterns: List<PatternConfig>
+    +EntryPoints: List<EntryPointConfig>
+    +State: Enum {Created, Activated, Invalidated, Completed}
+    --
+    +activate()
+    +invalidate(reason: String)
+    +validateConfigs()
+  }
 
-class AnalyzerService {
-  +evaluate(Market) : Setup
+  class IndicatorConfig {
+    +Type: Enum {RSI, MACD, SMA}
+    +Parameters: Map
+    --
+    +validateParameters()
+  }
+
+  class PatternConfig {
+    +Type: Enum {Breakout, DoubleTop}
+    +Rules: Map
+    --
+    +validateRules()
+  }
+
+  class EntryPointConfig {
+    +Level: Price
+    --
+    +validateAgainstTickSize(Symbol)
+  }
+
+  class AnalyzerService {
+    +evaluate(MarketFeed, StrategySetup): DecisionIntent
+  }
+
+  StrategySetup "1" o-- "*" IndicatorConfig
+  StrategySetup "1" o-- "*" PatternConfig
+  StrategySetup "1" o-- "*" EntryPointConfig
+  AnalyzerService ..> MarketFeed
+  AnalyzerService ..> StrategySetup
 }
 
-class Setup {
-  +SetupId : UUID
-  +Symbol: Symbol
-  +Timeframe: Timeframe
-  +Timestamp : Timestamp
-  +Patterns : List<Pattern>
-  +KeyEntryPoints : List<EntryPoint>
-  +Indicators : List<Indicator>
-  +State : Enum {Created, Activated, Invalidated, Completed}
-}
+package "Decision Context" {
+  class DecisionIntent {
+    +IntentId: UUID
+    +Type: Enum {EnterLong, EnterShort, Exit, ScaleIn, ScaleOut}
+    +TargetQty: Decimal
+    +PricePolicy: Enum {Market, Limit, MarketableLimit}
+    +ValidUntil: Timestamp
+    +Rationale: String
+    --
+    +isValid(Symbol): Boolean
+  }
 
-class Pattern {
-  +Id: String
-  +Candlesticks: List<Candlestick>
-}
-
-class EntryPoint {
-  +Id: String
-  +value: Decimal
-}
-
-class Indicator {
-  +Id: String
-  +Parameters : Map
-}
-
-Setup "1" o-- "*" Indicator
-Setup "1" o-- "*" Pattern
-Setup "1" o-- "*" EntryPoint
-AnalyzerService ..> Market
-AnalyzerService ..> Setup
-
+  AnalyzerService --> DecisionIntent
 }
 @enduml
