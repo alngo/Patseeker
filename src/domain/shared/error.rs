@@ -1,16 +1,16 @@
 use core::fmt;
 use std::error::Error;
 
-pub enum DomainError {
-    InvalidEntryPoint(String),
-    InvalidPattern(String),
+#[derive(Debug, PartialEq)]
+pub struct DomainError {
+    pub message: String,
 }
 
 impl Error for DomainError {}
 
 impl fmt::Display for DomainError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.)
+        write!(f, "{}", self.message)
     }
 }
 

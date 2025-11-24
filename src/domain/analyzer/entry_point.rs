@@ -1,4 +1,5 @@
 use rust_decimal::Decimal;
+use std::fmt::Debug;
 
 use crate::domain::shared::DomainError;
 
@@ -7,7 +8,7 @@ use crate::domain::shared::DomainError;
 /// # Methods
 /// - validate(&self, price: Decimal) -> bool: Validates if the given price is acceptable for
 /// entry.
-pub trait EntryPoint {
+pub trait EntryPoint: Debug {
     fn validate(&self, price: Decimal) -> bool;
 }
 
@@ -26,16 +27,16 @@ impl Level {
     pub fn new(price: Decimal, treshold: Decimal) -> Result<Self, DomainError> {
         // self.price > Decimal::ZERO && self.treshold >= Decimal::ZERO
         if price <= Decimal::ZERO {
-            return Err(DomainError::InvalidEntryPoint(
-                "Price must be greater than zero.".to_string(),
-            ));
+            return Err(DomainError {
+                message: "Price must be greater than zero.".to_string(),
+            });
         }
         if treshold < Decimal::ZERO {
-            return Err(DomainError::InvalidEntryPoint(
-                "Treshold must be non-negative.".to_string(),
-            ));
+            return Err(DomainError {
+                message: "Treshold must be non-negative.".to_string(),
+            });
         }
-        Self { price, treshold }
+        Ok(Self { price, treshold })
     }
 }
 
