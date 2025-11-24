@@ -1,5 +1,5 @@
+mod aggregate;
 mod error;
-mod rule;
 
+pub use aggregate::Aggregate;
 pub use error::DomainError;
-pub use rule::{CheckRule, Rule};

@@ -1,11 +1,4 @@
-use super::shared::{CheckRule, DomainError};
-
-mod rules;
-
-use rules::{
-    ClosePriceMustBeWithinHighAndLowRange, HighPriceMustBeGreaterThanLowPrice,
-    OpenPriceMustBeWithinHighAndLowRange,
-};
+use super::shared::{DomainError};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Direction {
@@ -34,8 +27,6 @@ pub struct Candlestick {
     timestamp: u64,
 }
 
-impl CheckRule for Candlestick {}
-
 impl Candlestick {
     pub fn new(
         open: f64,
@@ -45,9 +36,23 @@ impl Candlestick {
         volume: f64,
         timestamp: u64,
     ) -> Result<Self, DomainError> {
-        Self::check_rule(HighPriceMustBeGreaterThanLowPrice::new(high, low))?;
-        Self::check_rule(OpenPriceMustBeWithinHighAndLowRange::new(open, high, low))?;
-        Self::check_rule(ClosePriceMustBeWithinHighAndLowRange::new(close, high, low))?;
+        if high < low {
+            return Err(DomainError::InvalidCandlestick(
+                "High price must be greater than or equal to low price.".to_string(),
+            ));
+        }
+        if open < low || open > high {
+            return Err(DomainError::InvalidCandlestick(
+                "Open price must be within the high and low range.".to_string(),
+            ));
+        }
+        if close < low || close > high {
+            return Err(DomainError::InvalidCandlestick(
+                "Close price must be within the high and low range.".to_string(),
+            ));
+        }
+
+
 
         Ok(Self {
             open,
