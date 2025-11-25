@@ -1,0 +1,103 @@
+@startuml
+package "Application" {
+  AnalyseApplication --|> DataFeed: getDataFrom
+  AnalyseApplication --|> Analyzer: giveDataTo
+  AnalyseApplication --|> DoSomethingWithSignal
+}
+
+package "Domain" {
+
+  package "Analyzer" {
+    Analyzer --|> AnalyzerStatus: Can be in
+    Analyzer --|> AnalyzerCommand: handle
+    Analyzer --|> AnalyzerEvent: apply
+    Analyzer --|> Policy: contains
+    Analyzer --|> Pattern: contains
+    Analyzer --|> EntryPoint: contains
+
+    enum AnalyzerStatus {
+      Active
+      Inactive
+      Paused(reason: String)
+    }
+
+    enum AnalyzerCommand {
+      Activate
+      Deactivate
+    }
+
+    enum AnalyzerEvent {
+      Activated
+      Deactivated
+    }
+
+    class Analyzer <<aggregate>> {
+      +id: AnalyzerId,
+      +status: AnalyzerStatus,
+      +policy: Policy
+      +patterns: List<Pattern>
+      +entry_points: List<EntryPoint>
+      +handle(command: AnalyzerCommand): List<AnalyzerEvent>
+      +apply(event: AnalyzerEvent)
+    }
+
+    class Policy <<entity>> {
+      +validate(structure: Structure): bool
+    }
+
+    class Pattern <<entity>> {
+      +name(): string
+      +matches(candlesticks: List<Candlestick>): bool
+    }
+
+    class EntryPoint <<entity>> {
+      +validate(price: Decimal): bool
+      +validate(candlestick: Candlestick): bool
+    }
+  }
+
+  package "Market" {
+    class Structure <<entity>> {
+      +name(): string
+      +matches(candlesticks: List<Candlestick>): bool
+      +direction(): Direction
+    }
+
+    class DataFeed <<service>> {
+      +get_data(symbol: Symbol, timeframe: Timeframe, limit: usize) -> List<Candlestick>
+    }
+
+    class Candlestick <<value object>> {
+      +open: Decimal
+      +high: Decimal
+      +low: Decimal
+      +close: Decimal
+      +volume: Decimal
+      +timestamp: DateTime<Utc>
+    }
+
+    enum Direction {
+      Bullish,
+      Bearish,
+      Unknown
+    }
+
+    enum Symbol {
+      EURUSD
+    }
+
+    enum Timeframe {
+      M5
+    }
+
+  }
+
+  package "Signal" {
+    class Signal <<aggregate>> {
+      +id: SignalId
+      +timestamp: DateTime<Utc>
+      +reason: string
+    }
+  }
+}
+@enduml
