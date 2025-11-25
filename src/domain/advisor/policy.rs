@@ -1,9 +1,9 @@
-use crate::domain::market::{Direction, Structure};
+use crate::domain::market::Direction;
 use std::fmt::Debug;
 
 /// Policy trait defines the behavior for evaluating market structures.
 pub trait Policy: Debug {
-    fn evaluate(&self, structure: &dyn Structure) -> bool;
+    fn evaluate(&self, direction: &Direction) -> bool;
 }
 
 /// BullPolicy evaluates to true for bullish market structures.
@@ -11,8 +11,8 @@ pub trait Policy: Debug {
 pub struct BullPolicy;
 
 impl Policy for BullPolicy {
-    fn evaluate(&self, structure: &dyn Structure) -> bool {
-        matches!(structure.direction(), Direction::Bullish)
+    fn evaluate(&self, direction: &Direction) -> bool {
+        matches!(direction, Direction::Bullish)
     }
 }
 
@@ -21,8 +21,8 @@ impl Policy for BullPolicy {
 pub struct BearPolicy;
 
 impl Policy for BearPolicy {
-    fn evaluate(&self, structure: &dyn Structure) -> bool {
-        matches!(structure.direction(), Direction::Bearish)
+    fn evaluate(&self, direction: &Direction) -> bool {
+        matches!(direction, Direction::Bullish)
     }
 }
 
@@ -31,7 +31,7 @@ impl Policy for BearPolicy {
 pub struct RangePolicy;
 
 impl Policy for RangePolicy {
-    fn evaluate(&self, structure: &dyn Structure) -> bool {
-        matches!(structure.direction(), Direction::Unknown)
+    fn evaluate(&self, direction: &Direction) -> bool {
+        matches!(direction, Direction::Bullish)
     }
 }

@@ -1,8 +1,7 @@
 use chrono::{DateTime, Utc};
-use rust_decimal::{Decimal};
+use rust_decimal::Decimal;
 
 use crate::domain::{market::Direction, shared::DomainError};
-
 
 /// Represents a candlestick in financial price data.
 /// A candlestick encapsulates the open, high, low, close prices,
@@ -121,8 +120,8 @@ impl Candlestick {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use rust_decimal::dec;
     use chrono::TimeZone;
+    use rust_decimal::dec;
 
     #[test]
     fn test_candlestick_creation() {

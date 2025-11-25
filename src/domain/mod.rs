@@ -1,8 +1,7 @@
 mod shared;
 
-mod analyzer;
+mod advisor;
 mod market;
-mod signal;
 
-pub use analyzer::Analyzer;
-pub use signal::Signal;
+pub use advisor::Advisor;
+pub use market::Market;

@@ -1,4 +1,4 @@
-use crate::domain::{market::{Direction, Candlestick}};
+use crate::domain::market::{Candlestick, Direction};
 
 /// Trait representing a generic market structure in candlestick data analysis.
 /// Structures are used to identify specific market conditions that may indicate

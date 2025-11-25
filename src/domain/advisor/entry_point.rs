@@ -1,7 +1,7 @@
 use rust_decimal::Decimal;
 use std::fmt::Debug;
 
-use crate::domain::shared::DomainError;
+use crate::domain::{market::Candlestick, shared::DomainError};
 
 /// Represent a generic trade entry.
 /// Entry points are used to determine if a given price is suitable for entering a trade.
@@ -9,7 +9,8 @@ use crate::domain::shared::DomainError;
 /// - validate(&self, price: Decimal) -> bool: Validates if the given price is acceptable for
 /// entry.
 pub trait EntryPoint: Debug {
-    fn validate(&self, price: Decimal) -> bool;
+    fn name(&self) -> &str;
+    fn validate(&self, candlestick: &Candlestick) -> bool;
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -41,7 +42,12 @@ impl Level {
 }
 
 impl EntryPoint for Level {
-    fn validate(&self, price: Decimal) -> bool {
+    fn name(&self) -> &str {
+        "Level Entry Point"
+    }
+
+    fn validate(&self, candlestick: &Candlestick) -> bool {
+        let price = candlestick.close();
         let lower_bound = self.price - self.treshold;
         let upper_bound = self.price + self.treshold;
         price >= lower_bound && price <= upper_bound

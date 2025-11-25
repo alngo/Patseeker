@@ -1,0 +1,39 @@
+@startuml
+
+box "Interface"
+actor Provider
+end box
+box "Application"
+participant Analyzer
+end box
+box "Domain"
+participant Market
+participant Window
+participant Condition
+collections Advisors
+end box
+box "Infrastructure"
+database StructureRepo
+database SignalRepo
+end box
+
+Provider -> Analyzer: provide new candle
+group New Candle arrives
+Analyzer -> Market: AddCandle
+Market -> Market: Validate Candle
+Market -> Window: update
+Market -> Analyzer: CandleAdded(Candlestick)
+end
+group Market Condition Evaluation
+Market -> Condition: evaluate
+Market -> Analyzer: ConditionChanged(Structure)
+end
+Analyzer -> StructureRepo: save new Structure
+group Advisors Evaluation
+Analyzer -> Advisors: evaluate(Market)
+Advisors -> Analyzer: SignalGenerated(Signal)
+end
+Analyzer -> SignalRepo: save new Signal
+
+@enduml
+

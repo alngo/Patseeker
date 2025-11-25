@@ -1,10 +1,4 @@
 @startuml
-package "Application" {
-  AnalyseApplication --|> DataFeed: getDataFrom
-  AnalyseApplication --|> Analyzer: giveDataTo
-  AnalyseApplication --|> DoSomethingWithSignal
-}
-
 package "Domain" {
 
   package "Analyzer" {
