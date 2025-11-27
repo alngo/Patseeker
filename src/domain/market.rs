@@ -37,6 +37,10 @@ impl Market {
             window: Window::new(symbol, timeframe, lookback),
         }
     }
+
+    pub fn window(&self) -> &Window {
+        &self.window
+    }
 }
 
 pub enum MarketCommand {
@@ -51,10 +55,21 @@ impl Aggregate for Market {
     type Command = MarketCommand;
     type Event = MarketEvent;
 
-    fn handle(&self, command: Self::Command) -> Result<Vec<Self::Event>, super::shared::DomainError> {
+    fn handle(
+        &self,
+        command: Self::Command,
+    ) -> Result<Vec<Self::Event>, super::shared::DomainError> {
         match command {
-            MarketCommand::AddCandlestick(_candlestick) => {
-                Ok(vec![MarketEvent::CandlestickAdded(_candlestick)])
+            MarketCommand::AddCandlestick(candlestick) => {
+                if let Some(last) = self.window.candles().last()
+                    && candlestick.timestamp() <= last.timestamp()
+                {
+                    return Err(super::shared::DomainError {
+                        message: "Candlestick timestamp must be greater than the last candlestick"
+                            .to_string(),
+                    });
+                }
+                Ok(vec![MarketEvent::CandlestickAdded(candlestick)])
             }
         }
     }

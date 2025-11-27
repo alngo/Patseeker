@@ -1,3 +1,4 @@
+use std::fmt::Debug;
 use crate::domain::market::{Candlestick, Direction};
 
 /// Trait representing a generic market structure in candlestick data analysis.
@@ -8,12 +9,13 @@ use crate::domain::market::{Candlestick, Direction};
 /// - `matches(&self, candles: &[Candlestick]) -> bool`: Determines if the given
 ///   candlestick data matches the structure.
 /// - `direction(&self) -> &Direction`: Returns the market direction of the structure.
-pub trait Structure {
+pub trait Structure: Debug {
     fn name(&self) -> &str;
     fn matches(&self, candles: &[Candlestick]) -> bool;
     fn direction(&self) -> &Direction;
 }
 
+#[derive(Debug)]
 pub struct BullTrendStructure;
 
 impl Structure for BullTrendStructure {
@@ -22,7 +24,6 @@ impl Structure for BullTrendStructure {
     }
 
     fn matches(&self, candles: &[Candlestick]) -> bool {
-        // Simplified logic for demonstration purposes
         if candles.len() < 2 {
             return false;
         }

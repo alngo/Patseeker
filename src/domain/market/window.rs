@@ -31,7 +31,7 @@ impl Window {
         }
     }
 
-    pub fn get_candlesticks(&self) -> &[Candlestick] {
+    pub fn candles(&self) -> &[Candlestick] {
         &self.candles
     }
 }
