@@ -4,36 +4,35 @@ box "Interface"
 actor Provider
 end box
 box "Application"
-participant Analyzer
+participant AdvisorService
 end box
 box "Domain"
 participant Market
 participant Window
-participant Condition
-collections Advisors
+participant ContextAdvisor
+collections SignalAdvisors
 end box
 box "Infrastructure"
-database StructureRepo
-database SignalRepo
+database ContextRepository
+database SignalRepository
 end box
 
-Provider -> Analyzer: provide new candle
-group New Candle arrives
-Analyzer -> Market: AddCandle
+Provider -> AdvisorService: provide new candle
+group New Candle
+AdvisorService -> Market: AddCandle
 Market -> Market: Validate Candle
 Market -> Window: update
-Market -> Analyzer: CandleAdded(Candlestick)
+Market -> AdvisorService: event CandleAdded(Candlestick)
 end
-group Market Condition Evaluation
-Market -> Condition: evaluate
-Market -> Analyzer: ConditionChanged(Structure)
+group Context Evaluation
+AdvisorService -> ContextAdvisor: evaluate(market.window)
+ContextAdvisor -> AdvisorService: List<event StructureDetected(Context)>
 end
-Analyzer -> StructureRepo: save new Structure
-group Advisors Evaluation
-Analyzer -> Advisors: evaluate(Market)
-Advisors -> Analyzer: SignalGenerated(Signal)
+AdvisorService -> ContextRepository: save new Context
+group Signal Evaluation
+AdvisorService -> SignalAdvisors: evaluate(Market.window, Context)
+SignalAdvisors -> AdvisorService: SignalGenerated(Signal)
 end
-Analyzer -> SignalRepo: save new Signal
+AdvisorService -> SignalRepository: save new Signal
 
 @enduml
-
