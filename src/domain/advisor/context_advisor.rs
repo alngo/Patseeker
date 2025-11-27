@@ -6,8 +6,12 @@ use crate::domain::{
 mod context;
 mod structure;
 
+use async_trait::async_trait;
 pub use context::Context;
 pub use structure::Structure;
+
+#[async_trait(?Send)]
+pub trait ContextRepository {}
 
 type ContextAdvisorId = uuid::Uuid;
 
@@ -15,7 +19,7 @@ type ContextAdvisorId = uuid::Uuid;
 /// Active: ContextAdvisor is actively analyzing data.
 /// Inactive: ContextAdvisor is not analyzing data.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum AdvisorStatus {
+pub enum ContextAdvisorStatus {
     Active,
     Inactive,
     Paused(String), // Paused with a reason
@@ -29,7 +33,7 @@ pub enum AdvisorStatus {
 #[derive(Debug)]
 pub struct ContextAdvisor {
     id: ContextAdvisorId,
-    status: AdvisorStatus,
+    status: ContextAdvisorStatus,
     structures: Vec<Box<dyn Structure>>,
 }
 
@@ -37,12 +41,12 @@ impl ContextAdvisor {
     pub fn new(id: ContextAdvisorId) -> Self {
         Self {
             id,
-            status: AdvisorStatus::Inactive,
+            status: ContextAdvisorStatus::Inactive,
             structures: Vec::new(),
         }
     }
 
-    pub fn status(&self) -> &AdvisorStatus {
+    pub fn status(&self) -> &ContextAdvisorStatus {
         &self.status
     }
 }
@@ -66,7 +70,7 @@ impl Aggregate for ContextAdvisor {
     fn handle(&self, command: Self::Command) -> Result<Vec<Self::Event>, DomainError> {
         match command {
             ContextAdvisorCommand::Activate => {
-                if self.status == AdvisorStatus::Active {
+                if self.status == ContextAdvisorStatus::Active {
                     return Err(DomainError {
                         message: "ContextAdvisor is already active".to_string(),
                     });
@@ -74,7 +78,7 @@ impl Aggregate for ContextAdvisor {
                 Ok(vec![ContextAdvisorEvent::Activated])
             }
             ContextAdvisorCommand::Deactivate => {
-                if self.status == AdvisorStatus::Inactive {
+                if self.status == ContextAdvisorStatus::Inactive {
                     return Err(DomainError {
                         message: "ContextAdvisor is already inactive".to_string(),
                     });
@@ -101,14 +105,12 @@ impl Aggregate for ContextAdvisor {
     fn apply(&mut self, event: Self::Event) {
         match event {
             ContextAdvisorEvent::Activated => {
-                self.status = AdvisorStatus::Active;
+                self.status = ContextAdvisorStatus::Active;
             }
             ContextAdvisorEvent::Deactivated => {
-                self.status = AdvisorStatus::Inactive;
+                self.status = ContextAdvisorStatus::Inactive;
             }
-            ContextAdvisorEvent::ContextDetected(_structure) => {
-                // Handle context generation if needed
-            }
+            _ => {}
         }
     }
 }

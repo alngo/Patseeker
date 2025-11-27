@@ -1,0 +1,24 @@
+@startuml
+actor Application
+participant Supervisor
+participant ContextAdvisor
+participant SignalAdvisor
+
+Application -> Supervisor: coordinate(candles)
+
+Supervisor -> ContextAdvisor: analyze(candles)
+ContextAdvisor --> Supervisor: MarketTrendEvent(trend="Bear")
+
+alt Bear Trend
+    Supervisor -> SignalAdvisor: Pause("Bear Trend")
+    SignalAdvisor --> Supervisor: AdvisorStatus.Paused
+else Bull Trend
+    Supervisor -> SignalAdvisor: Activate
+    SignalAdvisor --> Supervisor: AdvisorStatus.Active
+    Supervisor -> SignalAdvisor: Analyze(candles)
+    SignalAdvisor --> Supervisor: SignalGenerated
+end
+
+Supervisor --> Application: Events (Paused or SignalGenerated)
+@enduml
+

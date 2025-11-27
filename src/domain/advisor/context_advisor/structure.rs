@@ -1,5 +1,5 @@
-use std::fmt::Debug;
 use crate::domain::market::{Candlestick, Direction};
+use std::fmt::Debug;
 
 /// Trait representing a generic market structure in candlestick data analysis.
 /// Structures are used to identify specific market conditions that may indicate

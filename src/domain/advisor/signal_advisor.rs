@@ -3,15 +3,19 @@ mod pattern;
 mod policy;
 mod signal;
 
-use entry_point::EntryPoint;
-use pattern::Pattern;
-use policy::Policy;
-use signal::Signal;
+use async_trait::async_trait;
+pub use entry_point::EntryPoint;
+pub use pattern::Pattern;
+pub use policy::Policy;
+pub use signal::Signal;
 
 use crate::domain::{
     market,
     shared::{Aggregate, DomainError},
 };
+
+#[async_trait(?Send)]
+pub trait SignalRepository {}
 
 type SignalAdvisorId = uuid::Uuid;
 
@@ -19,7 +23,7 @@ type SignalAdvisorId = uuid::Uuid;
 /// Active: SignalAdvisor is actively analyzing data.
 /// Inactive: SignalAdvisor is not analyzing data.
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum AdvisorStatus {
+pub enum SignalAdvisorStatus {
     Active,
     Inactive,
     Paused(String), // Paused with a reason
@@ -35,7 +39,7 @@ pub enum AdvisorStatus {
 #[derive(Debug)]
 pub struct SignalAdvisor {
     id: SignalAdvisorId,
-    status: AdvisorStatus,
+    status: SignalAdvisorStatus,
     policy: Box<dyn Policy>,
     patterns: Vec<Box<dyn Pattern>>,
     entry_points: Vec<Box<dyn EntryPoint>>,
@@ -45,14 +49,14 @@ impl SignalAdvisor {
     pub fn new(id: SignalAdvisorId, policy: Box<dyn Policy>) -> Self {
         Self {
             id,
-            status: AdvisorStatus::Inactive,
+            status: SignalAdvisorStatus::Inactive,
             policy,
             patterns: Vec::new(),
             entry_points: Vec::new(),
         }
     }
 
-    pub fn status(&self) -> &AdvisorStatus {
+    pub fn status(&self) -> &SignalAdvisorStatus {
         &self.status
     }
 
@@ -80,7 +84,7 @@ impl Aggregate for SignalAdvisor {
     fn handle(&self, command: Self::Command) -> Result<Vec<Self::Event>, DomainError> {
         match command {
             SignalAdvisorCommand::Activate => {
-                if self.status == AdvisorStatus::Active {
+                if self.status == SignalAdvisorStatus::Active {
                     return Err(DomainError {
                         message: "SignalAdvisor is already active".to_string(),
                     });
@@ -88,7 +92,7 @@ impl Aggregate for SignalAdvisor {
                 Ok(vec![SignalAdvisorEvent::Activated])
             }
             SignalAdvisorCommand::Deactivate => {
-                if self.status == AdvisorStatus::Inactive {
+                if self.status == SignalAdvisorStatus::Inactive {
                     return Err(DomainError {
                         message: "SignalAdvisor is already inactive".to_string(),
                     });
@@ -96,7 +100,7 @@ impl Aggregate for SignalAdvisor {
                 Ok(vec![SignalAdvisorEvent::Deactivated])
             }
             SignalAdvisorCommand::Analyze(candles) => {
-                if self.status != AdvisorStatus::Active {
+                if self.status != SignalAdvisorStatus::Active {
                     return Err(DomainError {
                         message: "SignalAdvisor is not active".to_string(),
                     });
@@ -136,14 +140,12 @@ impl Aggregate for SignalAdvisor {
     fn apply(&mut self, event: Self::Event) {
         match event {
             SignalAdvisorEvent::Activated => {
-                self.status = AdvisorStatus::Active;
+                self.status = SignalAdvisorStatus::Active;
             }
             SignalAdvisorEvent::Deactivated => {
-                self.status = AdvisorStatus::Inactive;
+                self.status = SignalAdvisorStatus::Inactive;
             }
-            SignalAdvisorEvent::SignalGenerated(_signal) => {
-                // Handle signal generation if needed
-            }
+            _ => {}
         }
     }
 }
