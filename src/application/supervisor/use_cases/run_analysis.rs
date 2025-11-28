@@ -1,7 +1,7 @@
 use async_trait::async_trait;
 
 use crate::{
-    application::shared::{error::ApplicationError},
+    application::shared::{error::ApplicationError, use_case::UseCase},
     domain::{Context, ContextRepository, DataFeed, Signal, SignalRepository, Symbol, Timeframe},
 };
 
@@ -52,8 +52,18 @@ where
     type Response = Response;
 
     async fn execute(&self, request: Request) -> Result {
-        let candles = self.datafeed.retrieve_candles(request.symbol, request.timeframe, request.lookback);
+        let candles = self.datafeed.candles(
+            request.symbol,
+            request.timeframe,
+            request.lookback
+        ).await?;
 
+        let from = candles[0].timestamp();
+        let contexts = self.context_repository.from(
+            request.symbol,
+            request.timeframe,
+            from
+        ).await?;
         // get last contexts
         // evaluate context
         // merge context

@@ -10,7 +10,7 @@ use mockall::automock;
 #[cfg_attr(test, automock)]
 #[async_trait(?Send)]
 pub trait DataFeed {
-    async fn retrieve_candles(
+    async fn candles(
         &self,
         symbol: Symbol,
         timeframe: Timeframe,

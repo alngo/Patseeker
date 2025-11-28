@@ -1,17 +1,24 @@
 use crate::domain::{
     market,
-    shared::{Aggregate, DomainError},
+    shared::{Aggregate, DomainError}, Symbol, Timeframe,
 };
 
 mod context;
 mod structure;
 
 use async_trait::async_trait;
+use chrono::{DateTime, Utc};
 pub use context::Context;
 pub use structure::Structure;
 
+#[cfg(test)]
+use mockall::automock;
+
+#[cfg_attr(test, automock)]
 #[async_trait(?Send)]
-pub trait ContextRepository {}
+pub trait ContextRepository {
+    fn from(&self, symbol: Symbol, timeframe: Timeframe, from: DateTime<Utc>);
+}
 
 type ContextAdvisorId = uuid::Uuid;
 
