@@ -1,7 +1,8 @@
-mod advisor;
+mod analysis;
 mod market;
 mod shared;
+mod supervisor;
 
-pub use advisor::*;
 pub use market::*;
 pub use shared::*;
+pub use supervisor::*;

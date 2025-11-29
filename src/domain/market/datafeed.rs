@@ -12,8 +12,8 @@ use mockall::automock;
 pub trait DataFeed {
     async fn candles(
         &self,
-        symbol: Symbol,
-        timeframe: Timeframe,
+        symbol: &Symbol,
+        timeframe: &Timeframe,
         len: usize,
     ) -> Result<Vec<Candlestick>, DomainError>;
 }

@@ -13,12 +13,12 @@ pub trait EntryPoint: Debug {
     fn validate(&self, candlestick: &Candlestick) -> bool;
 }
 
-#[derive(Debug, Clone, PartialEq)]
 /// Represent a price level for trade entry with an acceptable treshold.
 /// It is used to determine if a given price is within the acceptable range for entry.
 /// # Fields
 /// - price: The price level for entry.
 /// - treshold: The acceptable deviation from the price level.
+#[derive(Debug, Clone, PartialEq)]
 pub struct Level {
     price: Decimal,
     treshold: Decimal,

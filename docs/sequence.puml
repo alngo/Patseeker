@@ -1,38 +1,44 @@
 @startuml
-
 box "Interface"
-actor Provider
+  Actor Trader
 end box
+
 box "Application"
-participant AdvisorService
+  participant SupervisorAppService
 end box
+
 box "Domain"
-participant Market
-participant Window
-participant ContextAdvisor
-collections SignalAdvisors
+  participant Supervisor
+  participant StructureAdvisor
+  collections SignalAdvisors
 end box
+
 box "Infrastructure"
-database ContextRepository
-database SignalRepository
+  database MarketDataFeed
+  database StructureRepository
+  database SignalRepository
 end box
 
-Provider -> AdvisorService: provide new candle
-group New Candle
-AdvisorService -> Market: AddCandle
-Market -> Market: Validate Candle
-Market -> Window: update
-Market -> AdvisorService: event CandleAdded(Candlestick)
-end
-group Context Evaluation
-AdvisorService -> ContextAdvisor: evaluate(market.window)
-ContextAdvisor -> AdvisorService: List<event StructureDetected(Context)>
-end
-AdvisorService -> ContextRepository: save new Context
-group Signal Evaluation
-AdvisorService -> SignalAdvisors: evaluate(Market.window, Context)
-SignalAdvisors -> AdvisorService: SignalGenerated(Signal)
-end
-AdvisorService -> SignalRepository: save new Signal
+Trader -> SupervisorAppService: run_analysis(symbol, timeframe, lookback)
 
+SupervisorAppService -> MarketDataFeed: retrieve_candles(symbol, timeframe, lookback)
+MarketDataFeed --> SupervisorAppService: List<Candlestick>
+
+SupervisorAppService -> StructureRepository: retrieve_structure(symbol, timeframe, from_date)
+StructureRepository --> SupervisorAppService: List<Structure>
+
+SupervisorAppService -> Supervisor: run_analysis(candles, old_structures)
+Supervisor -> StructureAdvisor: evaluate(candles)
+StructureAdvisor --> Supervisor: List<Structure>
+
+Supervisor -> Supervisor: merge old + new structures
+Supervisor -> SignalAdvisors: evaluate(candles)
+SignalAdvisors --> Supervisor: List<Signal>
+
+Supervisor --> SupervisorAppService: (structures, signals)
+
+SupervisorAppService -> StructureRepository: save(structures)
+SupervisorAppService -> SignalRepository: save(signals)
+
+SupervisorAppService --> Trader: return (structures, signals)
 @enduml

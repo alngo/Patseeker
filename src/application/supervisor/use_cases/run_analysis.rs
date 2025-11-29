@@ -2,7 +2,10 @@ use async_trait::async_trait;
 
 use crate::{
     application::shared::{error::ApplicationError, use_case::UseCase},
-    domain::{Context, ContextRepository, DataFeed, Signal, SignalRepository, Symbol, Timeframe},
+    domain::{
+        Advisor, AdvisorEvent, DataFeed, Signal, SignalAdvisor, SignalRepository, Structure,
+        StructureAdvisor, StructureRepository, Symbol, Timeframe,
+    },
 };
 
 pub struct Request {
@@ -12,7 +15,7 @@ pub struct Request {
 }
 
 pub struct Response {
-    pub contexts: Vec<Context>,
+    pub structures: Vec<Structure>,
     pub signals: Vec<Signal>,
 }
 
@@ -20,24 +23,22 @@ pub type Result = core::result::Result<Response, ApplicationError>;
 
 pub struct RunAnalysis<'a, M, C, S> {
     datafeed: &'a M,
-    context_repository: &'a C,
+    structure_repository: &'a C,
     signal_repository: &'a S,
 }
 
 impl<'a, M, C, S> RunAnalysis<'a, M, C, S>
 where
     M: DataFeed,
-    C: ContextRepository,
+    C: StructureRepository,
     S: SignalRepository,
 {
-    pub fn new(datafeed: &'a M, context_repository: &'a C, signal_repository: &'a S) -> Self{
-
+    pub fn new(datafeed: &'a M, structure_repository: &'a C, signal_repository: &'a S) -> Self {
         Self {
             datafeed,
-            context_repository,
+            structure_repository,
             signal_repository,
         }
-
     }
 }
 
@@ -45,31 +46,44 @@ where
 impl<'a, M, C, S> UseCase for RunAnalysis<'a, M, C, S>
 where
     M: DataFeed,
-    C: ContextRepository,
+    C: StructureRepository,
     S: SignalRepository,
 {
     type Request = Request;
     type Response = Response;
 
     async fn execute(&self, request: Request) -> Result {
-        let candles = self.datafeed.candles(
-            request.symbol,
-            request.timeframe,
-            request.lookback
-        ).await?;
+        let candles = self
+            .datafeed
+            .candles(&request.symbol, &request.timeframe, request.lookback)
+            .await?;
 
         let from = candles[0].timestamp();
-        let contexts = self.context_repository.from(
-            request.symbol,
-            request.timeframe,
-            from
-        ).await?;
-        // get last contexts
-        // evaluate context
-        // merge context
-        //
-        // pause advisors based on their "act on(Structure)"
-        // evaluate signals
-        Ok(Response {contexts: Vec::new(), signals: Vec::new()})
+        let mut structures = self
+            .structure_repository
+            .from(&request.symbol, &request.timeframe, from)
+            .await?;
+
+        let structures_detected = StructureAdvisor::default().evaluate(&candles)?;
+
+        for event in structures_detected {
+            if let AdvisorEvent::StructureDetected(structure) = event {
+                structures.push(structure);
+            }
+        }
+
+        let signals_generated = SignalAdvisor::default().evaluate(&candles)?;
+
+        let mut signals = Vec::new();
+        for event in signals_generated {
+            if let AdvisorEvent::SignalGenerated(signal) = event {
+                signals.push(signal);
+            }
+        }
+
+        Ok(Response {
+            structures,
+            signals,
+        })
     }
 }
