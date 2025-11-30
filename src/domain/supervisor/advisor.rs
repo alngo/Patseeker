@@ -1,4 +1,7 @@
-use crate::domain::{supervisor::{signal::Signal, structure::Structure}, Candlestick, DomainError};
+use crate::domain::{
+    Candlestick, DomainError,
+    supervisor::{signal::Signal, structure::Structure},
+};
 
 #[cfg(test)]
 use mockall::automock;
@@ -13,5 +16,5 @@ pub enum AdvisorEvent {
 
 #[cfg_attr(test, automock)]
 pub trait Advisor {
-    fn evaluate(candles: &[Candlestick]) -> Result<Vec<AdvisorEvent>, DomainError>;
+    fn evaluates(&self, candles: &[Candlestick]) -> Result<Vec<AdvisorEvent>, DomainError>;
 }

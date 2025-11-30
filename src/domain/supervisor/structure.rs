@@ -1,6 +1,25 @@
+use async_trait::async_trait;
 use chrono::{DateTime, Utc};
 
-use crate::domain::{analysis::{BearTrendForm, BullTrendForm}, supervisor::advisor::{Advisor, AdvisorEvent}, Candlestick, DomainError};
+use crate::domain::{
+    Candlestick, DomainError, Symbol, Timeframe,
+    analysis::{BearTrendForm, BullTrendForm, Evaluate},
+    supervisor::advisor::{Advisor, AdvisorEvent},
+};
+
+#[cfg(test)]
+use mockall::automock;
+
+#[cfg_attr(test, automock)]
+#[async_trait(?Send)]
+pub trait StructureRepository {
+    async fn structures_from(
+        &self,
+        symbol: &Symbol,
+        timeframe: &Timeframe,
+        from: DateTime<Utc>,
+    ) -> Result<Vec<Structure>, DomainError>;
+}
 
 #[derive(Debug, Clone)]
 pub struct Structure {
@@ -24,16 +43,25 @@ impl Structure {
 }
 
 #[derive(Debug)]
-pub struct StructureAdvisor;
+pub struct StructureAdvisor {
+    looking_for: Vec<Box<dyn Evaluate>>,
+}
+
+impl Default for StructureAdvisor {
+    fn default() -> Self {
+        Self {
+            looking_for: vec![Box::new(BullTrendForm)],
+        }
+    }
+}
 
 impl Advisor for StructureAdvisor {
-    fn evaluate(candles: &[Candlestick]) -> Result<Vec<AdvisorEvent>, DomainError> {
-        let forms =  vec![Box::new(BullTrendForm), Box::new(BearTrendForm)];
+    fn evaluates(&self, candles: &[Candlestick]) -> Result<Vec<AdvisorEvent>, DomainError> {
         let mut events = Vec::new();
-        for form in forms {
-            if form.matches(candles) {
+        for form in &self.looking_for {
+            if form.evaluates(candles) {
                 let structure = Structure::new(
-                    uuid::Uuid::new_v4(),
+                    chrono::Utc::now(),
                     chrono::Utc::now(),
                     format!("Detected form: {}", form.name()),
                 );

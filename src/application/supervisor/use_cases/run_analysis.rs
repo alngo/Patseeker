@@ -3,8 +3,7 @@ use async_trait::async_trait;
 use crate::{
     application::shared::{error::ApplicationError, use_case::UseCase},
     domain::{
-        Advisor, AdvisorEvent, DataFeed, Signal, SignalAdvisor, SignalRepository, Structure,
-        StructureAdvisor, StructureRepository, Symbol, Timeframe,
+        DataFeed, Signal, SignalRepository, Structure, StructureRepository, Symbol, Timeframe,
     },
 };
 
@@ -61,25 +60,8 @@ where
         let from = candles[0].timestamp();
         let mut structures = self
             .structure_repository
-            .from(&request.symbol, &request.timeframe, from)
+            .structures_from(&request.symbol, &request.timeframe, from)
             .await?;
-
-        let structures_detected = StructureAdvisor::default().evaluate(&candles)?;
-
-        for event in structures_detected {
-            if let AdvisorEvent::StructureDetected(structure) = event {
-                structures.push(structure);
-            }
-        }
-
-        let signals_generated = SignalAdvisor::default().evaluate(&candles)?;
-
-        let mut signals = Vec::new();
-        for event in signals_generated {
-            if let AdvisorEvent::SignalGenerated(signal) = event {
-                signals.push(signal);
-            }
-        }
 
         Ok(Response {
             structures,

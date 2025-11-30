@@ -1,7 +1,20 @@
-use crate::domain::{Candlestick, analysis::Evaluate};
+use crate::domain::{
+    Candlestick,
+    analysis::{Evaluate, Formation},
+};
 
 #[derive(Debug)]
 pub struct BearTrendForm;
+
+impl Formation for BearTrendForm {
+    fn start(&self) -> &chrono::DateTime<chrono::Utc> {
+        todo!()
+    }
+
+    fn end(&self) -> &chrono::DateTime<chrono::Utc> {
+        todo!()
+    }
+}
 
 impl Evaluate for BearTrendForm {
     fn name(&self) -> &str {
