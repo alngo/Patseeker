@@ -1,97 +1,32 @@
 @startuml
+
 package "Domain" {
-
-  package "Analyzer" {
-    Analyzer --|> AnalyzerStatus: Can be in
-    Analyzer --|> AnalyzerCommand: handle
-    Analyzer --|> AnalyzerEvent: apply
-    Analyzer --|> Policy: contains
-    Analyzer --|> Pattern: contains
-    Analyzer --|> EntryPoint: contains
-
-    enum AnalyzerStatus {
-      Active
-      Inactive
-      Paused(reason: String)
-    }
-
-    enum AnalyzerCommand {
-      Activate
-      Deactivate
-    }
-
-    enum AnalyzerEvent {
-      Activated
-      Deactivated
-    }
-
-    class Analyzer <<aggregate>> {
-      +id: AnalyzerId,
-      +status: AnalyzerStatus,
-      +policy: Policy
-      +patterns: List<Pattern>
-      +entry_points: List<EntryPoint>
-      +handle(command: AnalyzerCommand): List<AnalyzerEvent>
-      +apply(event: AnalyzerEvent)
-    }
-
-    class Policy <<entity>> {
-      +validate(structure: Structure): bool
-    }
-
-    class Pattern <<entity>> {
-      +name(): string
-      +matches(candlesticks: List<Candlestick>): bool
-    }
-
-    class EntryPoint <<entity>> {
-      +validate(price: Decimal): bool
-      +validate(candlestick: Candlestick): bool
-    }
+  package "Supervis0r" {
+    class Supervisor
+    class StructureAdvisor
+    class SignalAdvisor
+    class Structure
+    class Signal
   }
-
+  package "Analysis" {
+    abstract class Formation
+    abstract class Pattern
+    abstract class EntryPoint
+  }
   package "Market" {
-    class Structure <<entity>> {
-      +name(): string
-      +matches(candlesticks: List<Candlestick>): bool
-      +direction(): Direction
-    }
-
-    class DataFeed <<service>> {
-      +get_data(symbol: Symbol, timeframe: Timeframe, limit: usize) -> List<Candlestick>
-    }
-
-    class Candlestick <<value object>> {
-      +open: Decimal
-      +high: Decimal
-      +low: Decimal
-      +close: Decimal
-      +volume: Decimal
-      +timestamp: DateTime<Utc>
-    }
-
-    enum Direction {
-      Bullish,
-      Bearish,
-      Unknown
-    }
-
-    enum Symbol {
-      EURUSD
-    }
-
-    enum Timeframe {
-      M5
-    }
-
+    interface DataFeed
+    class Candlestick
   }
 
-  package "Signal" {
-    class Signal <<aggregate>> {
-      +id: SignalId
-      +timestamp: DateTime<Utc>
-      +reason: string
-    }
-  }
+  Supervisor "1" --> "1" StructureAdvisor : contains
+  Supervisor "1" --> "*" SignalAdvisor : contains
+  Supervisor ..> DataFeed : uses
+  StructureAdvisor "1" --> "*" Formation : looking_for
+  StructureAdvisor ..> Structure : produces
+  SignalAdvisor "1" --> "*" Structure : activated_on
+  SignalAdvisor "1" --> "*" Pattern : looking_for
+  SignalAdvisor "1" --> "*" EntryPoint : at_entry
+  SignalAdvisor ..> Signal : produces
 }
+
 @enduml

@@ -10,17 +10,18 @@ mod advisor;
 mod signal;
 mod structure;
 
-pub struct Supervisor;
 pub use advisor::*;
 pub use signal::*;
 pub use structure::*;
+
+pub struct Supervisor;
 
 impl Supervisor {
     pub fn run_analysis(
         candles: &[Candlestick],
         old_structures: &[Structure],
     ) -> Result<(Vec<Structure>, Vec<Signal>), DomainError> {
-        let events = StructureAdvisor::evaluates(candles)?;
+        let events = StructureAdvisor::default().evaluates(candles)?;
         let mut new_structures = Vec::new();
         for event in events {
             match event {
@@ -33,7 +34,7 @@ impl Supervisor {
 
         let merged_structures = Supervisor::merge_structures(old_structures, &new_structures);
 
-        let events = SignalAdvisor::evaluates(candles)?;
+        let events = SignalAdvisor::default().evaluates(candles)?;
         let mut signals = Vec::new();
         for event in events {
             match event {
