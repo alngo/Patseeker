@@ -15,7 +15,6 @@ pub struct PriceLevel {
 
 impl PriceLevel {
     pub fn new(price: Decimal, treshold: Decimal) -> Result<Self, DomainError> {
-        // self.price > Decimal::ZERO && self.treshold >= Decimal::ZERO
         if price <= Decimal::ZERO {
             return Err(DomainError {
                 message: "Price must be greater than zero.".to_string(),
@@ -43,7 +42,7 @@ impl Evaluate for PriceLevel {
             return Some(Location::new(
                 candlesticks[0].timestamp(),
                 candlesticks[0].timestamp(),
-            ));
+            ).expect("Valid location"));
         }
         None
     }

@@ -19,7 +19,7 @@ impl Evaluate for BullTrendForm {
             return Some(Location::new(
                 candles.first().unwrap().timestamp(),
                 candles.last().unwrap().timestamp(),
-            ));
+            ).expect("Valid location"));
         }
         None
     }

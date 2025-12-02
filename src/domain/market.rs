@@ -5,29 +5,36 @@ pub use candlestick::Candlestick;
 use chrono::{DateTime, Utc};
 pub use datafeed::DataFeed;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+use crate::domain::DomainError;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Direction {
     Bullish,
     Bearish,
     Unknown,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Symbol {
     EURUSD,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Timeframe {
     M5,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Location(DateTime<Utc>, DateTime<Utc>);
 
 impl Location {
-    pub fn new(start: DateTime<Utc>, end: DateTime<Utc>) -> Self {
-        Self(start, end)
+    pub fn new(start: DateTime<Utc>, end: DateTime<Utc>) -> Result<Self, DomainError> {
+        if start >= end {
+            return Err(DomainError {
+                message: "Start time must be before end time.".to_string(),
+            });
+        }
+        Ok(Self(start, end))
     }
 }
 

@@ -56,3 +56,32 @@ impl Supervisor {
         merged
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use chrono::DateTime;
+    use rust_decimal::dec;
+
+    use super::*;
+    use crate::domain::Candlestick;
+
+    #[test]
+    fn test_run_analysis() {
+        let candles = vec![
+            Candlestick::new(dec!(100.0), dec!(105.0), dec!(99.0), dec!(104.0), dec!(1), DateTime::from_timestamp(1672531200, 0).unwrap()).unwrap(),
+            Candlestick::new(dec!(104.0), dec!(106.0), dec!(103.0), dec!(105.0), dec!(1), DateTime::from_timestamp(1672617600, 0).unwrap()).unwrap(),
+            Candlestick::new(dec!(105.0), dec!(107.0), dec!(104.0), dec!(106.0), dec!(1), DateTime::from_timestamp(1672704000, 0).unwrap()).unwrap(),
+        ];
+
+        let structure_history = vec![];
+
+        let result = Supervisor::run_analysis(candles.as_slice(), &structure_history);
+        assert!(result.is_ok());
+
+        let (structures, signals) = result.unwrap();
+        println!("Detected Structures: {:?}", structures);
+        println!("Generated Signals: {:?}", signals);
+        assert!(!structures.is_empty());
+        assert!(!signals.is_empty());
+    }
+}

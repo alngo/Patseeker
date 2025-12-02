@@ -25,7 +25,7 @@ impl Evaluate for BullReversalBar {
         third.close() > second.open()
         // Third candle closes above second candle's open
         {
-            return Some(Location::new(first.timestamp(), third.timestamp()));
+            return Some(Location::new(first.timestamp(), third.timestamp()).expect("Valid location"));
         }
         None
     }
