@@ -4,7 +4,7 @@ use bull_reversal_bar::BullReversalBar;
 
 use crate::domain::analysis::Evaluate;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Pattern {
     BullReversalBar,
     BearReversalBar,

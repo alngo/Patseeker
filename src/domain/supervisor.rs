@@ -31,11 +31,17 @@ impl Supervisor {
 
         let merged_structures = Supervisor::merge_structures(structure_history, &new_structures);
 
-        let events = SignalAdvisor::default().evaluates(candles)?;
         let mut signals = Vec::new();
-        for event in events {
-            if let AdvisorEvent::SignalGenerated(signal) = event {
-                signals.push(signal);
+
+        if let Some(last_structure) = merged_structures.last() {
+            let advisor = SignalAdvisor::default();
+            if advisor.is_activated_on(last_structure.formation()) {
+                let events = advisor.evaluates(candles)?;
+                for event in events {
+                    if let AdvisorEvent::SignalGenerated(signal) = event {
+                        signals.push(signal);
+                    }
+                }
             }
         }
 

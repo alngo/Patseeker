@@ -2,7 +2,7 @@ mod bull_trend_form;
 
 pub use bull_trend_form::BullTrendForm;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Formation {
     BullTrendForm,
     BearTrendForm,

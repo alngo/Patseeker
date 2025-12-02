@@ -2,7 +2,9 @@ use async_trait::async_trait;
 use chrono::{DateTime, Utc};
 
 use crate::domain::{
-    analysis::{Formation}, supervisor::advisor::{Advisor, AdvisorEvent}, Candlestick, DomainError, Location, Symbol, Timeframe
+    Candlestick, DomainError, Location, Symbol, Timeframe,
+    analysis::Formation,
+    supervisor::advisor::{Advisor, AdvisorEvent},
 };
 
 #[cfg(test)]
@@ -22,16 +24,25 @@ pub trait StructureRepository {
 #[derive(Debug, Clone)]
 pub struct Structure {
     location: Location,
+    formation: Formation,
     reason: String,
 }
 
 impl Structure {
-    pub fn new(location: Location, reason: String) -> Self {
-        Self { location, reason }
+    pub fn new(location: Location, formation: Formation, reason: String) -> Self {
+        Self {
+            location,
+            formation,
+            reason,
+        }
     }
 
     pub fn location(&self) -> &Location {
         &self.location
+    }
+
+    pub fn formation(&self) -> &Formation {
+        &self.formation
     }
 
     pub fn reason(&self) -> &str {
@@ -55,11 +66,12 @@ impl Default for StructureAdvisor {
 impl Advisor for StructureAdvisor {
     fn evaluates(&self, candles: &[Candlestick]) -> Result<Vec<AdvisorEvent>, DomainError> {
         let mut events = Vec::new();
-        for form in &self.looking_for {
-            if let Some(location) = form.evaluator().evaluates(candles) {
+        for formation in &self.looking_for {
+            if let Some(location) = formation.evaluator().evaluates(candles) {
                 let structure = Structure::new(
                     location,
-                    format!("Detected form: {}", form.to_string())
+                    *formation,
+                    format!("Detected form: {}", formation),
                 );
                 events.push(AdvisorEvent::StructureDetected(structure));
             }

@@ -1,9 +1,6 @@
-use chrono::{DateTime, Utc};
-
 use crate::domain::{
     Advisor, AdvisorEvent, Candlestick, DomainError, Location,
-    analysis::{Evaluate, Pattern},
-    supervisor::structure::Structure,
+    analysis::{Evaluate, Formation, Pattern},
 };
 
 pub trait SignalRepository {}
@@ -34,16 +31,46 @@ impl Signal {
 }
 
 pub struct SignalAdvisor {
-    activated_on: Vec<Structure>,
-    looking_for: Vec<Pattern>,
+    activate_on: Vec<Formation>,
+    look_for: Vec<Pattern>,
     at: Vec<Box<dyn Evaluate>>,
+}
+
+impl SignalAdvisor {
+    pub fn new(
+        activate_on: Vec<Formation>,
+        look_for: Vec<Pattern>,
+        at: Vec<Box<dyn Evaluate>>,
+    ) -> Self {
+        Self {
+            activate_on,
+            look_for,
+            at,
+        }
+    }
+
+    pub fn activate_on(&self) -> &Vec<Formation> {
+        &self.activate_on
+    }
+
+    pub fn looking_for(&self) -> &Vec<Pattern> {
+        &self.look_for
+    }
+
+    pub fn at(&self) -> &Vec<Box<dyn Evaluate>> {
+        &self.at
+    }
+
+    pub fn is_activated_on(&self, formation: &Formation) -> bool {
+        self.activate_on.contains(formation)
+    }
 }
 
 impl Default for SignalAdvisor {
     fn default() -> Self {
         Self {
-            activated_on: Vec::new(),
-            looking_for: Vec::new(),
+            activate_on: vec![Formation::BullTrendForm],
+            look_for: vec![Pattern::BullReversalBar],
             at: Vec::new(),
         }
     }
@@ -52,7 +79,7 @@ impl Default for SignalAdvisor {
 impl Advisor for SignalAdvisor {
     fn evaluates(&self, candles: &[Candlestick]) -> Result<Vec<AdvisorEvent>, DomainError> {
         let mut signals = Vec::new();
-        for pattern in &self.looking_for {
+        for pattern in &self.look_for {
             if let Some(location) = pattern.evaluator().evaluates(candles) {
                 let signal = Signal::new(
                     location,
