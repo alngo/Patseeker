@@ -1,6 +1,6 @@
 use rust_decimal::Decimal;
 
-use crate::domain::{Candlestick, DomainError, analysis::Evaluate};
+use crate::domain::{analysis::Evaluate, Candlestick, DomainError, Location};
 
 /// Represent a price level for trade entry with an acceptable treshold.
 /// It is used to determine if a given price is within the acceptable range for entry.
@@ -28,17 +28,23 @@ impl PriceLevel {
         }
         Ok(Self { price, treshold })
     }
-}
 
-impl Evaluate for PriceLevel {
     fn name(&self) -> &str {
         "Level Entry Point"
     }
+}
 
-    fn evaluates(&self, candlesticks: &[Candlestick]) -> bool {
+impl Evaluate for PriceLevel {
+    fn evaluates(&self, candlesticks: &[Candlestick]) -> Option<Location> {
         let price = candlesticks[0].close();
         let lower_bound = self.price - self.treshold;
         let upper_bound = self.price + self.treshold;
-        price >= lower_bound && price <= upper_bound
+        if price >= lower_bound && price <= upper_bound {
+            return Some(Location::new(
+                candlesticks[0].timestamp(),
+                candlesticks[0].timestamp(),
+            ))
+        }
+        None
     }
 }

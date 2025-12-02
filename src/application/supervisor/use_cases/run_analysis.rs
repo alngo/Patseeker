@@ -63,6 +63,8 @@ where
             .structures_from(&request.symbol, &request.timeframe, from)
             .await?;
 
+        let mut signals = Vec::new();
+
         Ok(Response {
             structures,
             signals,

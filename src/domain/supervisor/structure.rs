@@ -2,9 +2,7 @@ use async_trait::async_trait;
 use chrono::{DateTime, Utc};
 
 use crate::domain::{
-    Candlestick, DomainError, Symbol, Timeframe,
-    analysis::{BearTrendForm, BullTrendForm, Evaluate},
-    supervisor::advisor::{Advisor, AdvisorEvent},
+    analysis::{Formation}, supervisor::advisor::{Advisor, AdvisorEvent}, Candlestick, DomainError, Location, Symbol, Timeframe
 };
 
 #[cfg(test)]
@@ -23,34 +21,33 @@ pub trait StructureRepository {
 
 #[derive(Debug, Clone)]
 pub struct Structure {
-    start: DateTime<Utc>,
-    end: DateTime<Utc>,
+    location: Location,
     reason: String,
 }
 
 impl Structure {
-    pub fn new(start: DateTime<Utc>, end: DateTime<Utc>, reason: String) -> Self {
-        Self { start, end, reason }
+    pub fn new(location: Location, reason: String) -> Self {
+        Self { location, reason }
     }
 
-    pub fn start(&self) -> &DateTime<Utc> {
-        &self.start
+    pub fn location(&self) -> &Location {
+        &self.location
     }
 
-    pub fn end(&self) -> &DateTime<Utc> {
-        &self.end
+    pub fn reason(&self) -> &str {
+        &self.reason
     }
 }
 
 #[derive(Debug)]
 pub struct StructureAdvisor {
-    looking_for: Vec<Box<dyn Evaluate>>,
+    looking_for: Vec<Formation>,
 }
 
 impl Default for StructureAdvisor {
     fn default() -> Self {
         Self {
-            looking_for: vec![Box::new(BullTrendForm)],
+            looking_for: vec![Formation::BullTrendForm],
         }
     }
 }
@@ -59,11 +56,10 @@ impl Advisor for StructureAdvisor {
     fn evaluates(&self, candles: &[Candlestick]) -> Result<Vec<AdvisorEvent>, DomainError> {
         let mut events = Vec::new();
         for form in &self.looking_for {
-            if form.evaluates(candles) {
+            if let Some(location) = form.evaluator().evaluates(candles) {
                 let structure = Structure::new(
-                    chrono::Utc::now(),
-                    chrono::Utc::now(),
-                    format!("Detected form: {}", form.name()),
+                    location,
+                    format!("Detected form: {}", form.to_string())
                 );
                 events.push(AdvisorEvent::StructureDetected(structure));
             }

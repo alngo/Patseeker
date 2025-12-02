@@ -1,17 +1,26 @@
-use crate::domain::{Candlestick, analysis::Evaluate};
+use crate::domain::{Candlestick, Location, analysis::Evaluate};
 
 #[derive(Debug)]
 pub struct BullTrendForm;
 
-impl Evaluate for BullTrendForm {
+impl BullTrendForm {
     fn name(&self) -> &str {
-        "Bull Trend"
+        "Bull Trend Form"
     }
+}
 
-    fn evaluates(&self, candles: &[Candlestick]) -> bool {
+impl Evaluate for BullTrendForm {
+    fn evaluates(&self, candles: &[Candlestick]) -> Option<Location> {
+        // Simplified logic for demonstration purposes
         if candles.len() < 2 {
-            return false;
+            return None;
         }
-        candles.last().unwrap().close() > candles.first().unwrap().open()
+        if candles.last().unwrap().close() > candles.first().unwrap().open() {
+            return Some(Location::new(
+                candles.first().unwrap().timestamp(),
+                candles.last().unwrap().timestamp(),
+            ));
+        }
+        None
     }
 }

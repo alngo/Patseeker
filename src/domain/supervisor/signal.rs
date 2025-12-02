@@ -1,8 +1,8 @@
 use chrono::{DateTime, Utc};
 
 use crate::domain::{
-    Advisor, AdvisorEvent, Candlestick, DomainError,
-    analysis::{BullReversal, BullTrendForm, Evaluate},
+    Advisor, AdvisorEvent, Candlestick, DomainError, Location,
+    analysis::{Evaluate, Pattern},
     supervisor::structure::Structure,
 };
 
@@ -15,19 +15,27 @@ pub trait SignalRepository {}
 /// - reason: The reason or condition that triggered the signal.
 #[derive(Debug, Clone)]
 pub struct Signal {
-    timestamp: DateTime<Utc>,
+    location: Location,
     reason: String,
 }
 
 impl Signal {
-    pub fn new(timestamp: DateTime<Utc>, reason: String) -> Self {
-        Self { timestamp, reason }
+    pub fn new(location: Location, reason: String) -> Self {
+        Self { location, reason }
+    }
+
+    pub fn location(&self) -> &Location {
+        &self.location
+    }
+
+    pub fn reason(&self) -> &str {
+        &self.reason
     }
 }
 
 pub struct SignalAdvisor {
     activated_on: Vec<Structure>,
-    looking_for: Vec<Box<dyn Evaluate>>,
+    looking_for: Vec<Pattern>,
     at: Vec<Box<dyn Evaluate>>,
 }
 
@@ -35,7 +43,7 @@ impl Default for SignalAdvisor {
     fn default() -> Self {
         Self {
             activated_on: Vec::new(),
-            looking_for: vec![BullReversal],
+            looking_for: Vec::new(),
             at: Vec::new(),
         }
     }
@@ -45,7 +53,13 @@ impl Advisor for SignalAdvisor {
     fn evaluates(&self, candles: &[Candlestick]) -> Result<Vec<AdvisorEvent>, DomainError> {
         let mut signals = Vec::new();
         for pattern in &self.looking_for {
-            pattern.evaluates(candles);
+            if let Some(location) = pattern.evaluator().evaluates(candles) {
+                let signal = Signal::new(
+                    location,
+                    format!("Signal generated for pattern: {:?}", pattern),
+                );
+                signals.push(AdvisorEvent::SignalGenerated(signal));
+            }
         }
         Ok(signals)
     }

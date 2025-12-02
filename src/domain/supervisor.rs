@@ -19,29 +19,23 @@ pub struct Supervisor;
 impl Supervisor {
     pub fn run_analysis(
         candles: &[Candlestick],
-        old_structures: &[Structure],
+        structure_history: &[Structure],
     ) -> Result<(Vec<Structure>, Vec<Signal>), DomainError> {
         let events = StructureAdvisor::default().evaluates(candles)?;
         let mut new_structures = Vec::new();
         for event in events {
-            match event {
-                AdvisorEvent::StructureDetected(structure) => {
-                    new_structures.push(structure);
-                }
-                _ => {}
+            if let AdvisorEvent::StructureDetected(structure) = event {
+                new_structures.push(structure);
             }
         }
 
-        let merged_structures = Supervisor::merge_structures(old_structures, &new_structures);
+        let merged_structures = Supervisor::merge_structures(structure_history, &new_structures);
 
         let events = SignalAdvisor::default().evaluates(candles)?;
         let mut signals = Vec::new();
         for event in events {
-            match event {
-                AdvisorEvent::SignalGenerated(signal) => {
-                    signals.push(signal);
-                }
-                _ => {}
+            if let AdvisorEvent::SignalGenerated(signal) = event {
+                signals.push(signal);
             }
         }
 
@@ -52,7 +46,7 @@ impl Supervisor {
         // enforce invariants: avoid duplicates, ensure chronological consistency
         let mut merged = old.to_vec();
         merged.extend(new.iter().cloned());
-        merged.sort_by_key(|s| *s.start());
+        merged.sort_by_key(|s| *s.location().start());
         merged
     }
 }
