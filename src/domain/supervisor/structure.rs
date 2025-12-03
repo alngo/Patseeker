@@ -70,7 +70,8 @@ impl Advisor for StructureAdvisor {
     fn evaluates(&self, candles: &[Candlestick]) -> Result<Vec<AdvisorEvent>, DomainError> {
         let mut events = Vec::new();
         for formation in &self.look_for {
-            if let Some(location) = formation.evaluator().evaluates(candles) {
+            let locations = formation.evaluator().evaluates(candles);
+            for location in locations {
                 let structure = Structure::new(
                     location,
                     *formation,
@@ -83,7 +84,7 @@ impl Advisor for StructureAdvisor {
     }
 }
 
-mock!{
+mock! {
     pub StructureAdvisor {
         pub fn new(look_for: Vec<Formation>) -> Self;
 

@@ -1,6 +1,9 @@
 pub use crate::domain::{
     Candlestick, DomainError,
-    supervisor::{signal::{Signal, SignalRepository}, structure::{Structure, StructureRepository}},
+    supervisor::{
+        signal::{Signal, SignalRepository},
+        structure::{Structure, StructureRepository},
+    },
 };
 
 pub use signal::SignalAdvisor;
@@ -85,9 +88,6 @@ impl Supervisor {
 
 #[cfg(test)]
 mod tests {
-    use chrono::{DateTime, TimeZone, Utc};
-    use rust_decimal::dec;
-
     use super::*;
 
     #[test]
@@ -122,12 +122,27 @@ mod tests {
         let signal_advisor = SignalAdvisor::new(vec![], vec![], vec![]);
         let supervisor = Supervisor::new(structure_advisor, vec![signal_advisor]).unwrap();
         let candles = vec![
-            Candlestick::new(Utc.with_ymd_and_hms(2023, 1, 1, 0, 0, 0).unwrap(), dec!(100.0), dec!(110.0), dec!(90.0), dec!(105.0), dec!(1000.0)).unwrap(),
-            Candlestick::new(Utc.with_ymd_and_hms(2023, 1, 1, 1, 0, 0).unwrap(), dec!(105.0), dec!(115.0), dec!(95.0), dec!(110.0), dec!(1500.0)).unwrap(),
+            Candlestick::new(
+                1672531200.into(),
+                100.0.into(),
+                110.0.into(),
+                90.0.into(),
+                105.0.into(),
+                1000.0.into(),
+            )
+            .unwrap(),
+            Candlestick::new(
+                1672531500.into(),
+                105.0.into(),
+                115.0.into(),
+                95.0.into(),
+                110.0.into(),
+                1500.0.into(),
+            )
+            .unwrap(),
         ];
         let structure_history = vec![];
         let result = supervisor.run_analysis(&candles, &structure_history);
         assert!(result.is_ok());
     }
-
 }

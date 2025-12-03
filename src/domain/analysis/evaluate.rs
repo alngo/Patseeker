@@ -7,5 +7,5 @@ use crate::domain::{Location, market::Candlestick};
 /// that may indicate potential price movements.
 /// # Methods
 pub trait Evaluate: Debug {
-    fn evaluates(&self, candles: &[Candlestick]) -> Option<Location>;
+    fn evaluates(&self, candles: &[Candlestick]) -> Vec<Location>;
 }

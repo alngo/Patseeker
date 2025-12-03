@@ -1,36 +1,34 @@
-use chrono::{DateTime, Utc};
-use rust_decimal::Decimal;
+use crate::domain::{market::{price::Price, timestamp::Timestamp, Direction}, shared::DomainError};
 
-use crate::domain::{market::Direction, shared::DomainError};
 
 /// Represents a candlestick in financial price data.
 /// A candlestick encapsulates the open, high, low, close prices,
 /// trading volume, and timestamp for a specific time period.
 /// # Fields
+/// - `timestamp`: The timestamp representing the start of the candlestick period.
 /// - `open`: The opening price of the candlestick.
 /// - `high`: The highest price reached during the candlestick period.
 /// - `low`: The lowest price reached during the candlestick period.
 /// - `close`: The closing price of the candlestick.
 /// - `volume`: The trading volume during the candlestick period.
-/// - `timestamp`: The timestamp representing the start of the candlestick period.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Candlestick {
-    timestamp: DateTime<Utc>,
-    open: Decimal,
-    high: Decimal,
-    low: Decimal,
-    close: Decimal,
-    volume: Decimal,
+    timestamp: Timestamp,
+    open: Price,
+    high: Price,
+    low: Price,
+    close: Price,
+    volume: Price,
 }
 
 impl Candlestick {
     pub fn new(
-        timestamp: DateTime<Utc>,
-        open: Decimal,
-        high: Decimal,
-        low: Decimal,
-        close: Decimal,
-        volume: Decimal,
+        timestamp: Timestamp,
+        open: Price,
+        high: Price,
+        low: Price,
+        close: Price,
+        volume: Price,
     ) -> Result<Self, DomainError> {
         if high < low {
             return Err(DomainError {
@@ -49,48 +47,48 @@ impl Candlestick {
         }
 
         Ok(Self {
+            timestamp,
             open,
             high,
             low,
             close,
             volume,
-            timestamp,
         })
     }
 
-    pub fn open(&self) -> Decimal {
+    pub fn open(&self) -> Price {
         self.open
     }
 
-    pub fn high(&self) -> Decimal {
+    pub fn high(&self) -> Price {
         self.high
     }
 
-    pub fn low(&self) -> Decimal {
+    pub fn low(&self) -> Price {
         self.low
     }
 
-    pub fn close(&self) -> Decimal {
+    pub fn close(&self) -> Price {
         self.close
     }
 
-    pub fn volume(&self) -> Decimal {
+    pub fn volume(&self) -> Price {
         self.volume
     }
 
-    pub fn timestamp(&self) -> DateTime<Utc> {
+    pub fn timestamp(&self) -> Timestamp {
         self.timestamp
     }
 
-    pub fn body(&self) -> Decimal {
-        (self.close - self.open).abs()
+    pub fn body(&self) -> Price {
+        self.close - self.open
     }
 
-    pub fn range(&self) -> Decimal {
+    pub fn range(&self) -> Price {
         self.high - self.low
     }
 
-    pub fn upper_wick(&self) -> Decimal {
+    pub fn upper_wick(&self) -> Price {
         if self.close > self.open {
             self.high - self.close
         } else {
@@ -98,7 +96,7 @@ impl Candlestick {
         }
     }
 
-    pub fn lower_wick(&self) -> Decimal {
+    pub fn lower_wick(&self) -> Price {
         if self.close < self.open {
             self.close - self.low
         } else {
@@ -121,39 +119,37 @@ impl Candlestick {
 mod tests {
     use super::*;
     use chrono::TimeZone;
-    use rust_decimal::dec;
 
     #[test]
     fn test_candlestick_creation() {
-        let timestamp = Utc.with_ymd_and_hms(2023, 1, 1, 0, 0, 0).unwrap();
-        let candle = Candlestick::new(
+        let timestamp: Timestamp = 1672531200.into();
+        let candlestick = Candlestick::new(
             timestamp,
-            dec!(100),
-            dec!(110),
-            dec!(90),
-            dec!(105),
-            dec!(1000),
+            100.into(),
+            110.into(),
+            90.into(),
+            105.into(),
+            1000.into(),
         )
         .unwrap();
 
-        assert_eq!(candle.open(), dec!(100));
-        assert_eq!(candle.high(), dec!(110));
-        assert_eq!(candle.low(), dec!(90));
-        assert_eq!(candle.close(), dec!(105));
-        assert_eq!(candle.volume(), dec!(1000));
-        assert_eq!(candle.timestamp(), timestamp);
+        assert_eq!(candlestick.timestamp(), timestamp);
+        assert_eq!(candlestick.open().value(), 100.into());
+        assert_eq!(candlestick.high().value(), 110.into());
+        assert_eq!(candlestick.low().value(), 90.into());
+        assert_eq!(candlestick.close().value(), 105.into());
+        assert_eq!(candlestick.volume().value(), 1000.into());
     }
 
     #[test]
     fn test_candlestick_invalid_creation() {
-        let timestamp = Utc.with_ymd_and_hms(2023, 1, 1, 0, 0, 0).unwrap();
         let result = Candlestick::new(
-            timestamp,
-            dec!(100),
-            dec!(90), // Invalid high
-            dec!(95),
-            dec!(105),
-            dec!(1000),
+            1672531200.into(),
+            100.into(),
+            90.into(), // Invalid high
+            95.into(),
+            105.into(),
+            1000.into(),
         );
 
         assert!(result.is_err());
@@ -161,37 +157,35 @@ mod tests {
 
     #[test]
     fn test_candlestick_direction() {
-        let timestamp = Utc.with_ymd_and_hms(2023, 1, 1, 0, 0, 0).unwrap();
-
         let bullish_candle = Candlestick::new(
-            timestamp,
-            dec!(100),
-            dec!(110),
-            dec!(90),
-            dec!(105),
-            dec!(1000),
+            1672531200.into(),
+            100.into(),
+            110.into(),
+            90.into(),
+            105.into(),
+            1000.into(),
         )
         .unwrap();
         assert_eq!(bullish_candle.direction(), Direction::Bullish);
 
         let bearish_candle = Candlestick::new(
-            timestamp,
-            dec!(105),
-            dec!(110),
-            dec!(90),
-            dec!(100),
-            dec!(1000),
+            1672531200.into(),
+            105.into(),
+            110.into(),
+            90.into(),
+            100.into(),
+            1000.into(),
         )
         .unwrap();
         assert_eq!(bearish_candle.direction(), Direction::Bearish);
 
         let range_candle = Candlestick::new(
-            timestamp,
-            dec!(100),
-            dec!(110),
-            dec!(90),
-            dec!(100),
-            dec!(1000),
+            1672531200.into(),
+            100.into(),
+            110.into(),
+            90.into(),
+            100.into(),
+            1000.into(),
         )
         .unwrap();
         assert_eq!(range_candle.direction(), Direction::Unknown);

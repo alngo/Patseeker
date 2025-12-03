@@ -1,8 +1,11 @@
+mod price;
+mod timestamp;
 mod candlestick;
 mod datafeed;
 
+pub use price::*;
+pub use timestamp::Timestamp;
 pub use candlestick::Candlestick;
-use chrono::{DateTime, Utc};
 pub use datafeed::DataFeed;
 
 use crate::domain::DomainError;
@@ -25,10 +28,10 @@ pub enum Timeframe {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct Location(DateTime<Utc>, DateTime<Utc>);
+pub struct Location(Timestamp, Timestamp);
 
 impl Location {
-    pub fn new(start: DateTime<Utc>, end: DateTime<Utc>) -> Result<Self, DomainError> {
+    pub fn new(start: Timestamp, end: Timestamp) -> Result<Self, DomainError> {
         if start >= end {
             return Err(DomainError {
                 message: "Start time must be before end time.".to_string(),
@@ -39,11 +42,11 @@ impl Location {
 }
 
 impl Location {
-    pub fn start(&self) -> &DateTime<Utc> {
+    pub fn start(&self) -> &Timestamp {
         &self.0
     }
 
-    pub fn end(&self) -> &DateTime<Utc> {
+    pub fn end(&self) -> &Timestamp {
         &self.1
     }
 }

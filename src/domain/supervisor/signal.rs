@@ -85,7 +85,8 @@ impl Advisor for SignalAdvisor {
     fn evaluates(&self, candles: &[Candlestick]) -> Result<Vec<AdvisorEvent>, DomainError> {
         let mut signals = Vec::new();
         for pattern in &self.look_for {
-            if let Some(location) = pattern.evaluator().evaluates(candles) {
+            let locations = pattern.evaluator().evaluates(candles);
+            for location in locations {
                 let signal = Signal::new(
                     location,
                     format!("Signal generated for pattern: {:?}", pattern),

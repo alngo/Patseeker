@@ -3,7 +3,8 @@ use async_trait::async_trait;
 use crate::{
     application::shared::{error::ApplicationError, use_case::UseCase},
     domain::{
-        DataFeed, Signal, SignalRepository, Structure, StructureRepository, Symbol, Timeframe,
+        DataFeed, Signal, SignalRepository, Structure, StructureRepository, Supervisor, Symbol,
+        Timeframe,
     },
 };
 
@@ -24,6 +25,7 @@ pub struct RunAnalysis<'a, M, C, S> {
     datafeed: &'a M,
     structure_repository: &'a C,
     signal_repository: &'a S,
+    supervisor: Supervisor,
 }
 
 impl<'a, M, C, S> RunAnalysis<'a, M, C, S>
@@ -32,11 +34,17 @@ where
     C: StructureRepository,
     S: SignalRepository,
 {
-    pub fn new(datafeed: &'a M, structure_repository: &'a C, signal_repository: &'a S) -> Self {
+    pub fn new(
+        datafeed: &'a M,
+        structure_repository: &'a C,
+        signal_repository: &'a S,
+        supervisor: Supervisor,
+    ) -> Self {
         Self {
             datafeed,
             structure_repository,
             signal_repository,
+            supervisor,
         }
     }
 }
@@ -60,10 +68,13 @@ where
         let from = candles[0].timestamp();
         let structures = self
             .structure_repository
-            .structures_from(&request.symbol, &request.timeframe, from)
+            .structures_from(&request.symbol, &request.timeframe, from.into())
             .await?;
 
-        let signals = Vec::new();
+        let (structures, signals) = self
+            .supervisor
+            .run_analysis(&candles, &structures)
+            .map_err(|e| ApplicationError { message: e.message })?;
 
         Ok(Response {
             structures,
