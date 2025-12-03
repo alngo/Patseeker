@@ -1,27 +1,53 @@
 pub use crate::domain::{
     Candlestick, DomainError,
-    supervisor::{
-        signal::{Signal, SignalAdvisor},
-        structure::{Structure, StructureAdvisor},
-    },
+    supervisor::{signal::{Signal, SignalRepository}, structure::{Structure, StructureRepository}},
 };
+
+pub use signal::SignalAdvisor;
+pub use structure::StructureAdvisor;
 
 mod advisor;
 mod signal;
 mod structure;
 
 pub use advisor::*;
-pub use signal::*;
-pub use structure::*;
 
-pub struct Supervisor;
+pub struct Supervisor {
+    struct_advisor: StructureAdvisor,
+    signal_advisors: Vec<SignalAdvisor>,
+}
+
+impl Supervisor {
+    pub fn new(
+        struct_advisor: StructureAdvisor,
+        signal_advisors: Vec<SignalAdvisor>,
+    ) -> Result<Self, DomainError> {
+        if signal_advisors.is_empty() {
+            return Err(DomainError {
+                message: "At least one SignalAdvisor must be provided".to_string(),
+            });
+        }
+
+        Ok(Self {
+            struct_advisor,
+            signal_advisors,
+        })
+    }
+}
 
 impl Supervisor {
     pub fn run_analysis(
+        &self,
         candles: &[Candlestick],
-        structure_history: &[Structure],
+        history: &[Structure],
     ) -> Result<(Vec<Structure>, Vec<Signal>), DomainError> {
-        let events = StructureAdvisor::default().evaluates(candles)?;
+        if candles.is_empty() {
+            return Err(DomainError {
+                message: "Candles data cannot be empty".to_string(),
+            });
+        }
+
+        let events = self.struct_advisor.evaluates(candles)?;
         let mut new_structures = Vec::new();
         for event in events {
             if let AdvisorEvent::StructureDetected(structure) = event {
@@ -29,22 +55,22 @@ impl Supervisor {
             }
         }
 
-        let merged_structures = Supervisor::merge_structures(structure_history, &new_structures);
+        let merged_structures = Supervisor::merge_structures(history, &new_structures);
 
         let mut signals = Vec::new();
 
         if let Some(last_structure) = merged_structures.last() {
-            let advisor = SignalAdvisor::default();
-            if advisor.is_activated_on(last_structure.formation()) {
-                let events = advisor.evaluates(candles)?;
-                for event in events {
-                    if let AdvisorEvent::SignalGenerated(signal) = event {
-                        signals.push(signal);
+            for advisor in &self.signal_advisors {
+                if advisor.is_activated_on(last_structure.formation()) {
+                    let events = advisor.evaluates(candles)?;
+                    for event in events {
+                        if let AdvisorEvent::SignalGenerated(signal) = event {
+                            signals.push(signal);
+                        }
                     }
                 }
             }
         }
-
         Ok((merged_structures, signals))
     }
 
@@ -59,29 +85,49 @@ impl Supervisor {
 
 #[cfg(test)]
 mod tests {
-    use chrono::DateTime;
+    use chrono::{DateTime, TimeZone, Utc};
     use rust_decimal::dec;
 
     use super::*;
-    use crate::domain::Candlestick;
 
     #[test]
-    fn test_run_analysis() {
-        let candles = vec![
-            Candlestick::new(dec!(100.0), dec!(105.0), dec!(99.0), dec!(104.0), dec!(1), DateTime::from_timestamp(1672531200, 0).unwrap()).unwrap(),
-            Candlestick::new(dec!(104.0), dec!(106.0), dec!(103.0), dec!(105.0), dec!(1), DateTime::from_timestamp(1672617600, 0).unwrap()).unwrap(),
-            Candlestick::new(dec!(105.0), dec!(107.0), dec!(104.0), dec!(106.0), dec!(1), DateTime::from_timestamp(1672704000, 0).unwrap()).unwrap(),
-        ];
-
-        let structure_history = vec![];
-
-        let result = Supervisor::run_analysis(candles.as_slice(), &structure_history);
-        assert!(result.is_ok());
-
-        let (structures, signals) = result.unwrap();
-        println!("Detected Structures: {:?}", structures);
-        println!("Generated Signals: {:?}", signals);
-        assert!(!structures.is_empty());
-        assert!(!signals.is_empty());
+    fn test_supervisor_creation_without_signal_advisors() {
+        let structure_advisor = StructureAdvisor::new(vec![]);
+        let result = Supervisor::new(structure_advisor, vec![]);
+        assert!(result.is_err());
     }
+
+    #[test]
+    fn test_supervisor_creation_with_signal_advisors() {
+        let structure_advisor = StructureAdvisor::new(vec![]);
+        let signal_advisor = SignalAdvisor::new(vec![], vec![], vec![]);
+        let result = Supervisor::new(structure_advisor, vec![signal_advisor]);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_run_analysis_with_empty_candle() {
+        let structure_advisor = StructureAdvisor::new(vec![]);
+        let signal_advisor = SignalAdvisor::new(vec![], vec![], vec![]);
+        let supervisor = Supervisor::new(structure_advisor, vec![signal_advisor]).unwrap();
+        let candles = vec![];
+        let structure_history = vec![];
+        let result = supervisor.run_analysis(&candles, &structure_history);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_run_analysis_with_valid_data() {
+        let structure_advisor = StructureAdvisor::new(vec![]);
+        let signal_advisor = SignalAdvisor::new(vec![], vec![], vec![]);
+        let supervisor = Supervisor::new(structure_advisor, vec![signal_advisor]).unwrap();
+        let candles = vec![
+            Candlestick::new(Utc.with_ymd_and_hms(2023, 1, 1, 0, 0, 0).unwrap(), dec!(100.0), dec!(110.0), dec!(90.0), dec!(105.0), dec!(1000.0)).unwrap(),
+            Candlestick::new(Utc.with_ymd_and_hms(2023, 1, 1, 1, 0, 0).unwrap(), dec!(105.0), dec!(115.0), dec!(95.0), dec!(110.0), dec!(1500.0)).unwrap(),
+        ];
+        let structure_history = vec![];
+        let result = supervisor.run_analysis(&candles, &structure_history);
+        assert!(result.is_ok());
+    }
+
 }

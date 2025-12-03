@@ -11,5 +11,6 @@ crate-type = ["cdylib"]
 async-trait = "0.1.89"
 chrono = "0.4.42"
 mockall = "0.13.1"
+mockall_double = "0.3.1"
 rust_decimal = { version = "1.39.0", features = ["macros"] }
 uuid = { version = "1.18.1", features = ["v4", "v8"] }

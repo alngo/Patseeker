@@ -1,5 +1,6 @@
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
+use mockall::mock;
 
 use crate::domain::{
     Candlestick, DomainError, Location, Symbol, Timeframe,
@@ -52,21 +53,23 @@ impl Structure {
 
 #[derive(Debug)]
 pub struct StructureAdvisor {
-    looking_for: Vec<Formation>,
+    look_for: Vec<Formation>,
 }
 
-impl Default for StructureAdvisor {
-    fn default() -> Self {
-        Self {
-            looking_for: vec![Formation::BullTrendForm],
-        }
+impl StructureAdvisor {
+    pub fn new(look_for: Vec<Formation>) -> Self {
+        Self { look_for }
+    }
+
+    pub fn look_for(&self) -> &Vec<Formation> {
+        &self.look_for
     }
 }
 
 impl Advisor for StructureAdvisor {
     fn evaluates(&self, candles: &[Candlestick]) -> Result<Vec<AdvisorEvent>, DomainError> {
         let mut events = Vec::new();
-        for formation in &self.looking_for {
+        for formation in &self.look_for {
             if let Some(location) = formation.evaluator().evaluates(candles) {
                 let structure = Structure::new(
                     location,
@@ -77,5 +80,17 @@ impl Advisor for StructureAdvisor {
             }
         }
         Ok(events)
+    }
+}
+
+mock!{
+    pub StructureAdvisor {
+        pub fn new(look_for: Vec<Formation>) -> Self;
+
+        pub fn look_for(&self) -> &Vec<Formation>;
+    }
+
+    impl Advisor for StructureAdvisor {
+        fn evaluates(&self, candles: &[Candlestick]) -> Result<Vec<AdvisorEvent>, DomainError>;
     }
 }

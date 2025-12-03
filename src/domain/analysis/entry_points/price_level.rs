@@ -39,10 +39,10 @@ impl Evaluate for PriceLevel {
         let lower_bound = self.price - self.treshold;
         let upper_bound = self.price + self.treshold;
         if price >= lower_bound && price <= upper_bound {
-            return Some(Location::new(
-                candlesticks[0].timestamp(),
-                candlesticks[0].timestamp(),
-            ).expect("Valid location"));
+            return Some(
+                Location::new(candlesticks[0].timestamp(), candlesticks[0].timestamp())
+                    .expect("Valid location"),
+            );
         }
         None
     }

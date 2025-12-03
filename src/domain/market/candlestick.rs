@@ -15,22 +15,22 @@ use crate::domain::{market::Direction, shared::DomainError};
 /// - `timestamp`: The timestamp representing the start of the candlestick period.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Candlestick {
+    timestamp: DateTime<Utc>,
     open: Decimal,
     high: Decimal,
     low: Decimal,
     close: Decimal,
     volume: Decimal,
-    timestamp: DateTime<Utc>,
 }
 
 impl Candlestick {
     pub fn new(
+        timestamp: DateTime<Utc>,
         open: Decimal,
         high: Decimal,
         low: Decimal,
         close: Decimal,
         volume: Decimal,
-        timestamp: DateTime<Utc>,
     ) -> Result<Self, DomainError> {
         if high < low {
             return Err(DomainError {
@@ -127,12 +127,12 @@ mod tests {
     fn test_candlestick_creation() {
         let timestamp = Utc.with_ymd_and_hms(2023, 1, 1, 0, 0, 0).unwrap();
         let candle = Candlestick::new(
+            timestamp,
             dec!(100),
             dec!(110),
             dec!(90),
             dec!(105),
             dec!(1000),
-            timestamp,
         )
         .unwrap();
 
@@ -148,12 +148,12 @@ mod tests {
     fn test_candlestick_invalid_creation() {
         let timestamp = Utc.with_ymd_and_hms(2023, 1, 1, 0, 0, 0).unwrap();
         let result = Candlestick::new(
+            timestamp,
             dec!(100),
             dec!(90), // Invalid high
             dec!(95),
             dec!(105),
             dec!(1000),
-            timestamp,
         );
 
         assert!(result.is_err());
@@ -164,34 +164,34 @@ mod tests {
         let timestamp = Utc.with_ymd_and_hms(2023, 1, 1, 0, 0, 0).unwrap();
 
         let bullish_candle = Candlestick::new(
+            timestamp,
             dec!(100),
             dec!(110),
             dec!(90),
             dec!(105),
             dec!(1000),
-            timestamp,
         )
         .unwrap();
         assert_eq!(bullish_candle.direction(), Direction::Bullish);
 
         let bearish_candle = Candlestick::new(
+            timestamp,
             dec!(105),
             dec!(110),
             dec!(90),
             dec!(100),
             dec!(1000),
-            timestamp,
         )
         .unwrap();
         assert_eq!(bearish_candle.direction(), Direction::Bearish);
 
         let range_candle = Candlestick::new(
+            timestamp,
             dec!(100),
             dec!(110),
             dec!(90),
             dec!(100),
             dec!(1000),
-            timestamp,
         )
         .unwrap();
         assert_eq!(range_candle.direction(), Direction::Unknown);

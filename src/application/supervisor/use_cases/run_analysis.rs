@@ -58,12 +58,12 @@ where
             .await?;
 
         let from = candles[0].timestamp();
-        let mut structures = self
+        let structures = self
             .structure_repository
             .structures_from(&request.symbol, &request.timeframe, from)
             .await?;
 
-        let mut signals = Vec::new();
+        let signals = Vec::new();
 
         Ok(Response {
             structures,

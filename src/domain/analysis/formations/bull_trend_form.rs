@@ -16,10 +16,13 @@ impl Evaluate for BullTrendForm {
             return None;
         }
         if candles.last().unwrap().close() > candles.first().unwrap().open() {
-            return Some(Location::new(
-                candles.first().unwrap().timestamp(),
-                candles.last().unwrap().timestamp(),
-            ).expect("Valid location"));
+            return Some(
+                Location::new(
+                    candles.first().unwrap().timestamp(),
+                    candles.last().unwrap().timestamp(),
+                )
+                .expect("Valid location"),
+            );
         }
         None
     }
