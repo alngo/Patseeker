@@ -22,7 +22,7 @@ impl Evaluate for BullReversalBar {
                 second.close() < second.open() &&   // Second candle is bearish
                     third.close() > third.open() &&     // Third candle is bullish
                     third.close() > second.open()
-                    // Third candle closes above second candle's open
+            // Third candle closes above second candle's open
             {
                 locations.push(
                     Location::new(first.timestamp(), third.timestamp()).expect("Valid location"),

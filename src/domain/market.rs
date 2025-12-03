@@ -1,12 +1,12 @@
-mod price;
-mod timestamp;
 mod candlestick;
 mod datafeed;
+mod price;
+mod timestamp;
 
-pub use price::*;
-pub use timestamp::Timestamp;
 pub use candlestick::Candlestick;
 pub use datafeed::DataFeed;
+pub use price::*;
+pub use timestamp::Timestamp;
 
 use crate::domain::DomainError;
 

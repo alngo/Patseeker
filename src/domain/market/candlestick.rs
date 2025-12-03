@@ -1,5 +1,7 @@
-use crate::domain::{market::{price::Price, timestamp::Timestamp, Direction}, shared::DomainError};
-
+use crate::domain::{
+    market::{Direction, price::Price, timestamp::Timestamp},
+    shared::DomainError,
+};
 
 /// Represents a candlestick in financial price data.
 /// A candlestick encapsulates the open, high, low, close prices,
@@ -118,7 +120,6 @@ impl Candlestick {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use chrono::TimeZone;
 
     #[test]
     fn test_candlestick_creation() {

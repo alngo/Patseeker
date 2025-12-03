@@ -1,6 +1,6 @@
 use rust_decimal::Decimal;
 
-use crate::domain::{analysis::Evaluate, Candlestick, DomainError, Location, Price};
+use crate::domain::{Candlestick, DomainError, Location, Price, analysis::Evaluate};
 
 /// Represent a price level for trade entry with an acceptable treshold.
 /// It is used to determine if a given price is within the acceptable range for entry.

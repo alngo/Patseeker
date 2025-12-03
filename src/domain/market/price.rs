@@ -1,3 +1,4 @@
+use std::fmt::Display;
 use std::ops::{Add, Sub};
 
 use rust_decimal::Decimal;
@@ -6,7 +7,11 @@ use rust_decimal::prelude::FromPrimitive;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Price(Decimal);
 
-const ZERO_PRICE: Price = Price(Decimal::ZERO);
+impl Display for Price {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
 
 impl Price {
     pub fn value(&self) -> Decimal {
@@ -114,4 +119,3 @@ mod tests {
         assert_eq!(result.value(), Decimal::from_f64(60.0).unwrap());
     }
 }
-
