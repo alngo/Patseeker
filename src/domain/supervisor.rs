@@ -81,13 +81,15 @@ impl Supervisor {
         // enforce invariants: avoid duplicates, ensure chronological consistency
         let mut merged = old.to_vec();
         merged.extend(new.iter().cloned());
-        merged.sort_by_key(|s| *s.location().start());
+        merged.sort_by_key(|s| *s.timestamp());
         merged
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use crate::domain::{create_candlesticks, test::Candle};
+
     use super::*;
 
     #[test]
@@ -100,7 +102,7 @@ mod tests {
     #[test]
     fn test_supervisor_creation_with_signal_advisors() {
         let structure_advisor = StructureAdvisor::new(vec![]);
-        let signal_advisor = SignalAdvisor::new(vec![], vec![], vec![]);
+        let signal_advisor = SignalAdvisor::new(vec![], vec![]);
         let result = Supervisor::new(structure_advisor, vec![signal_advisor]);
         assert!(result.is_ok());
     }
@@ -108,7 +110,7 @@ mod tests {
     #[test]
     fn test_run_analysis_with_empty_candle() {
         let structure_advisor = StructureAdvisor::new(vec![]);
-        let signal_advisor = SignalAdvisor::new(vec![], vec![], vec![]);
+        let signal_advisor = SignalAdvisor::new(vec![], vec![]);
         let supervisor = Supervisor::new(structure_advisor, vec![signal_advisor]).unwrap();
         let candles = vec![];
         let structure_history = vec![];
@@ -119,28 +121,12 @@ mod tests {
     #[test]
     fn test_run_analysis_with_valid_data() {
         let structure_advisor = StructureAdvisor::new(vec![]);
-        let signal_advisor = SignalAdvisor::new(vec![], vec![], vec![]);
+        let signal_advisor = SignalAdvisor::new(vec![], vec![]);
         let supervisor = Supervisor::new(structure_advisor, vec![signal_advisor]).unwrap();
-        let candles = vec![
-            Candlestick::new(
-                1672531200.into(),
-                100.0.into(),
-                110.0.into(),
-                90.0.into(),
-                105.0.into(),
-                1000.0.into(),
-            )
-            .unwrap(),
-            Candlestick::new(
-                1672531500.into(),
-                105.0.into(),
-                115.0.into(),
-                95.0.into(),
-                110.0.into(),
-                1500.0.into(),
-            )
-            .unwrap(),
-        ];
+        let candles = create_candlesticks(vec![
+            Candle(1672531200, 100.0, 110.0, 90.0, 105.0, 1000),
+            Candle(1672531500, 105.0, 115.0, 95.0, 110.0, 1500),
+        ]);
         let structure_history = vec![];
         let result = supervisor.run_analysis(&candles, &structure_history);
         assert!(result.is_ok());

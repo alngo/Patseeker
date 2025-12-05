@@ -38,19 +38,16 @@ impl Signal {
 pub struct SignalAdvisor {
     activate_on: Vec<Formation>,
     look_for: Vec<Pattern>,
-    at: Vec<Box<dyn Evaluate>>,
 }
 
 impl SignalAdvisor {
     pub fn new(
         activate_on: Vec<Formation>,
         look_for: Vec<Pattern>,
-        at: Vec<Box<dyn Evaluate>>,
     ) -> Self {
         Self {
             activate_on,
             look_for,
-            at,
         }
     }
 
@@ -62,22 +59,8 @@ impl SignalAdvisor {
         &self.look_for
     }
 
-    pub fn at(&self) -> &Vec<Box<dyn Evaluate>> {
-        &self.at
-    }
-
     pub fn is_activated_on(&self, formation: &Formation) -> bool {
         self.activate_on.contains(formation)
-    }
-}
-
-impl Default for SignalAdvisor {
-    fn default() -> Self {
-        Self {
-            activate_on: vec![Formation::BullTrendForm],
-            look_for: vec![Pattern::BullReversalBar],
-            at: Vec::new(),
-        }
     }
 }
 
@@ -103,7 +86,6 @@ mock! {
         pub fn new(
             activate_on: Vec<Formation>,
             look_for: Vec<Pattern>,
-            at: Vec<Box<dyn Evaluate>>,
         ) -> Self;
 
         pub fn is_activated_on(&self, formation: &Formation) -> bool;

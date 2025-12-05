@@ -1,4 +1,7 @@
-use crate::domain::{Candlestick, Location, analysis::Evaluate};
+use crate::domain::{
+    Candlestick, Location, Structure,
+    analysis::{Evaluate, Formation},
+};
 
 #[derive(Debug)]
 pub struct BullTrendForm;
@@ -9,20 +12,22 @@ impl BullTrendForm {
     }
 }
 
-impl Evaluate for BullTrendForm {
-    fn evaluates(&self, candles: &[Candlestick]) -> Vec<Location> {
-        let mut locations = Vec::new();
+impl Evaluate<Structure> for BullTrendForm {
+    fn evaluates(&self, candles: &[Candlestick]) -> Vec<Structure> {
+        let mut structures = Vec::new();
         if candles.len() > 2 {
             if candles.last().unwrap().close() > candles.first().unwrap().open() {
-                locations.push(
+                structures.push(Structure::new(
                     Location::new(
                         candles.first().unwrap().timestamp(),
                         candles.last().unwrap().timestamp(),
                     )
                     .expect("Valid location"),
-                );
+                    Formation::BullTrendForm,
+                    format!("Detected form: {}", self.name()),
+                ));
             }
         }
-        locations
+        structures
     }
 }

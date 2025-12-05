@@ -33,7 +33,7 @@ impl PriceLevel {
     }
 }
 
-impl Evaluate for PriceLevel {
+impl Evaluate<Location> for PriceLevel {
     fn evaluates(&self, candlesticks: &[Candlestick]) -> Vec<Location> {
         let mut locations = Vec::new();
         let price = candlesticks[0].close();

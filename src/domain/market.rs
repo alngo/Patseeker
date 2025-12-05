@@ -17,6 +17,16 @@ pub enum Direction {
     Unknown,
 }
 
+impl std::fmt::Display for Direction {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Direction::Bullish => write!(f, "Bullish"),
+            Direction::Bearish => write!(f, "Bearish"),
+            Direction::Unknown => write!(f, "Unknown"),
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Symbol {
     EURUSD,
@@ -32,7 +42,7 @@ pub struct Location(Timestamp, Timestamp);
 
 impl Location {
     pub fn new(start: Timestamp, end: Timestamp) -> Result<Self, DomainError> {
-        if start >= end {
+        if start > end {
             return Err(DomainError {
                 message: "Start time must be before end time.".to_string(),
             });

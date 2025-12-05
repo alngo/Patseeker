@@ -13,8 +13,8 @@ pub fn create_candlesticks(candles: Vec<Candle>) -> Vec<Candlestick> {
                 low.into(),
                 close.into(),
                 volume.into(),
-            ).unwrap()
+            )
+            .unwrap()
         })
-    .collect()
+        .collect()
 }
-

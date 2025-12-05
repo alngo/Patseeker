@@ -1,8 +1,10 @@
 use std::fmt::Display;
-use std::ops::{Add, Sub};
+use std::iter::Sum;
+use std::ops::{Add, Div, Mul, Sub};
 
 use rust_decimal::Decimal;
 use rust_decimal::prelude::FromPrimitive;
+use rust_decimal::prelude::ToPrimitive;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Price(Decimal);
@@ -17,6 +19,30 @@ impl Price {
     pub fn value(&self) -> Decimal {
         self.0
     }
+
+    pub fn abs(&self) -> Price {
+        Price(self.0.abs())
+    }
+
+    pub fn zero() -> Price {
+        Price(Decimal::ZERO)
+    }
+
+    pub fn max(self, other: Price) -> Price {
+        if self.0 > other.0 {
+            self
+        } else {
+            other
+        }
+    }
+
+    pub fn min(self, other: Price) -> Price {
+        if self.0 < other.0 {
+            self
+        } else {
+            other
+        }
+    }
 }
 
 impl From<Decimal> for Price {
@@ -28,6 +54,25 @@ impl From<Decimal> for Price {
 impl From<Price> for Decimal {
     fn from(price: Price) -> Self {
         price.0
+    }
+}
+
+impl From<Price> for f64 {
+    fn from(price: Price) -> Self {
+        price.0.to_f64().unwrap_or(0.0)
+    }
+}
+
+impl From<usize> for Price {
+    fn from(value: usize) -> Self {
+        let decimal_value = Decimal::from_usize(value).unwrap_or(Decimal::ZERO);
+        Price(decimal_value)
+    }
+}
+
+impl Sum for Price {
+    fn sum<I: Iterator<Item = Price>>(iter: I) -> Self {
+        iter.fold(Price::zero(), |acc, x| acc + x)
     }
 }
 
@@ -72,6 +117,24 @@ impl Add for Price {
 
     fn add(self, rhs: Price) -> Self::Output {
         Price(self.0 + rhs.0)
+    }
+}
+
+impl Mul<f64> for Price {
+    type Output = Price;
+
+    fn mul(self, rhs: f64) -> Self::Output {
+        let decimal_rhs = Decimal::from_f64(rhs).unwrap_or(Decimal::ZERO);
+        Price(self.0 * decimal_rhs)
+    }
+}
+
+impl Div<f64> for Price {
+    type Output = Price;
+
+    fn div(self, rhs: f64) -> Self::Output {
+        let decimal_rhs = Decimal::from_f64(rhs).unwrap_or(Decimal::ONE);
+        Price(self.0 / decimal_rhs)
     }
 }
 

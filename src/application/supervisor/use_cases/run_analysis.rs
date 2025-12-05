@@ -66,14 +66,14 @@ where
             .await?;
 
         let from = candles[0].timestamp();
-        let structures = self
+        let history = self
             .structure_repository
             .structures_from(&request.symbol, &request.timeframe, from.into())
             .await?;
 
         let (structures, signals) = self
             .supervisor
-            .run_analysis(&candles, &structures)
+            .run_analysis(&candles, &history)
             .map_err(|e| ApplicationError { message: e.message })?;
 
         Ok(Response {

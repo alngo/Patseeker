@@ -2,7 +2,7 @@ mod bull_reversal_bar;
 
 use bull_reversal_bar::BullReversalBar;
 
-use crate::domain::analysis::Evaluate;
+use crate::domain::{Location, analysis::Evaluate};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Pattern {
@@ -11,7 +11,7 @@ pub enum Pattern {
 }
 
 impl Pattern {
-    pub fn evaluator(&self) -> Box<dyn Evaluate> {
+    pub fn evaluator(&self) -> Box<dyn Evaluate<Location>> {
         match self {
             Pattern::BullReversalBar => Box::new(BullReversalBar),
             Pattern::BearReversalBar => unimplemented!(),

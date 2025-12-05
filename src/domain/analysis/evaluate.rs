@@ -6,6 +6,6 @@ use crate::domain::{Location, market::Candlestick};
 /// Patterns are used to identify specific formations in candlestick charts
 /// that may indicate potential price movements.
 /// # Methods
-pub trait Evaluate: Debug {
-    fn evaluates(&self, candles: &[Candlestick]) -> Vec<Location>;
+pub trait Evaluate<T>: Debug {
+    fn evaluates(&self, candles: &[Candlestick]) -> Vec<T>;
 }

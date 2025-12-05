@@ -9,7 +9,7 @@ impl BullReversalBar {
     }
 }
 
-impl Evaluate for BullReversalBar {
+impl Evaluate<Location> for BullReversalBar {
     fn evaluates(&self, candles: &[Candlestick]) -> Vec<Location> {
         let mut locations = Vec::new();
         // Simplified logic for demonstration purposes
