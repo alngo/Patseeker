@@ -21,7 +21,7 @@ pub trait StructureRepository {
     ) -> Result<Vec<Structure>, DomainError>;
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Structure {
     formation: Formation,
     timestamp: Timestamp,

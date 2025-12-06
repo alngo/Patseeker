@@ -78,9 +78,12 @@ impl Supervisor {
     }
 
     fn merge_structures(old: &[Structure], new: &[Structure]) -> Vec<Structure> {
-        // enforce invariants: avoid duplicates, ensure chronological consistency
         let mut merged = old.to_vec();
-        merged.extend(new.iter().cloned());
+        for structure in new {
+            if !merged.iter().any(|s| s.timestamp() == structure.timestamp()) {
+                merged.push(structure.clone());
+            }
+        }
         merged.sort_by_key(|s| *s.timestamp());
         merged
     }
@@ -88,7 +91,7 @@ impl Supervisor {
 
 #[cfg(test)]
 mod tests {
-    use crate::candle;
+    use crate::{candle, domain::analysis::Formation};
 
     use super::*;
 
@@ -130,5 +133,52 @@ mod tests {
         let structure_history = vec![];
         let result = supervisor.run_analysis(&candles, &structure_history);
         assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_merge_structures() {
+        let old_structures = vec![];
+        let new_structures = vec![];
+        let merged = Supervisor::merge_structures(&old_structures, &new_structures);
+        assert!(merged.is_empty());
+    }
+
+    #[test]
+    fn test_merge_structures_with_data() {
+        let old_structures = vec![
+            Structure::new(1672531200.into(), Formation::Dummy),
+            Structure::new(1672531500.into(), Formation::Dummy),
+        ];
+        let new_structures = vec![
+            Structure::new(1672531800.into(), Formation::Dummy),
+            Structure::new(1672532100.into(), Formation::Dummy),
+        ];
+
+        let expected_structures = vec![
+            Structure::new(1672531200.into(), Formation::Dummy),
+            Structure::new(1672531500.into(), Formation::Dummy),
+            Structure::new(1672531800.into(), Formation::Dummy),
+            Structure::new(1672532100.into(), Formation::Dummy),
+        ];
+        let merged = Supervisor::merge_structures(&old_structures, &new_structures);
+        assert_eq!(merged, expected_structures);
+    }
+
+    #[test]
+    fn test_merge_structures_with_overlapping_data() {
+        let old_structures = vec![
+            Structure::new(1672531200.into(), Formation::Dummy),
+            Structure::new(1672531500.into(), Formation::Dummy),
+        ];
+        let new_structures = vec![
+            Structure::new(1672531200.into(), Formation::Dummy),
+            Structure::new(1672531500.into(), Formation::Dummy),
+        ];
+        let expected_structures = vec![
+            Structure::new(1672531200.into(), Formation::Dummy),
+            Structure::new(1672531500.into(), Formation::Dummy),
+        ];
+        let merged = Supervisor::merge_structures(&old_structures, &new_structures);
+        assert_eq!(merged, expected_structures);
     }
 }
