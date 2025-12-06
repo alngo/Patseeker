@@ -5,9 +5,7 @@ mod advisor;
 
 pub use advisor::*;
 
-use crate::domain::{
-    analysis::Formation, DomainError, Location, Symbol, Timeframe, Timestamp
-};
+use crate::domain::{DomainError, Symbol, Timeframe, Timestamp, analysis::Formation};
 
 #[cfg(test)]
 use mockall::automock;

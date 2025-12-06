@@ -88,7 +88,7 @@ impl Supervisor {
 
 #[cfg(test)]
 mod tests {
-    use crate::domain::{create_candlesticks, test::Candle};
+    use crate::candle;
 
     use super::*;
 
@@ -123,10 +123,10 @@ mod tests {
         let structure_advisor = StructureAdvisor::new(vec![]);
         let signal_advisor = SignalAdvisor::new(vec![], vec![]);
         let supervisor = Supervisor::new(structure_advisor, vec![signal_advisor]).unwrap();
-        let candles = create_candlesticks(vec![
-            Candle(1672531200, 100.0, 110.0, 90.0, 105.0, 1000),
-            Candle(1672531500, 105.0, 115.0, 95.0, 110.0, 1500),
-        ]);
+        let candles = vec![
+            candle!(1672531200, 100.0, 110.0, 90.0, 105.0, 1000),
+            candle!(1672531500, 105.0, 115.0, 95.0, 110.0, 1500),
+        ];
         let structure_history = vec![];
         let result = supervisor.run_analysis(&candles, &structure_history);
         assert!(result.is_ok());

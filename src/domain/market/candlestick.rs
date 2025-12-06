@@ -108,9 +108,9 @@ impl Candlestick {
 
     pub fn direction(&self) -> Direction {
         if self.close > self.open {
-            Direction::Bullish
+            Direction::Up
         } else if self.close < self.open {
-            Direction::Bearish
+            Direction::Down
         } else {
             Direction::Unknown
         }
@@ -167,7 +167,7 @@ mod tests {
             1000.into(),
         )
         .unwrap();
-        assert_eq!(bullish_candle.direction(), Direction::Bullish);
+        assert_eq!(bullish_candle.direction(), Direction::Up);
 
         let bearish_candle = Candlestick::new(
             1672531200.into(),
@@ -178,7 +178,7 @@ mod tests {
             1000.into(),
         )
         .unwrap();
-        assert_eq!(bearish_candle.direction(), Direction::Bearish);
+        assert_eq!(bearish_candle.direction(), Direction::Down);
 
         let range_candle = Candlestick::new(
             1672531200.into(),

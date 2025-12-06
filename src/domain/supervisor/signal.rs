@@ -1,6 +1,6 @@
 use crate::domain::{
     Advisor, AdvisorEvent, Candlestick, DomainError, Location,
-    analysis::{Evaluate, Formation, Pattern},
+    analysis::{Formation, Pattern},
 };
 
 #[cfg(test)]
@@ -41,10 +41,7 @@ pub struct SignalAdvisor {
 }
 
 impl SignalAdvisor {
-    pub fn new(
-        activate_on: Vec<Formation>,
-        look_for: Vec<Pattern>,
-    ) -> Self {
+    pub fn new(activate_on: Vec<Formation>, look_for: Vec<Pattern>) -> Self {
         Self {
             activate_on,
             look_for,

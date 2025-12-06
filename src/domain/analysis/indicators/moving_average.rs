@@ -1,4 +1,4 @@
-use crate::domain::{analysis::Evaluate, Candlestick, Price};
+use crate::domain::{Candlestick, Price, analysis::Evaluate};
 
 #[derive(Debug, Clone, Copy)]
 enum Type {
@@ -30,7 +30,7 @@ impl Evaluate<Price> for MovingAverage {
                         Input::Close => c.close(),
                     })
                     .sum();
-                ma[i] = (sum / (period as f64)).into();
+                ma[i] = sum / period as f64;
             }
         }
 

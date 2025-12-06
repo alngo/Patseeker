@@ -1,9 +1,9 @@
-mod swing;
 mod pivot;
+mod swing;
 
 pub use swing::Swing;
 
-use crate::domain::{analysis::Evaluate, Direction, Structure};
+use crate::domain::{Direction, Structure, analysis::Evaluate};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Formation {

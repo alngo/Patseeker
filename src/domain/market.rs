@@ -12,16 +12,16 @@ use crate::domain::DomainError;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Direction {
-    Bullish,
-    Bearish,
+    Up,
+    Down,
     Unknown,
 }
 
 impl std::fmt::Display for Direction {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Direction::Bullish => write!(f, "Bullish"),
-            Direction::Bearish => write!(f, "Bearish"),
+            Direction::Up => write!(f, "Up"),
+            Direction::Down => write!(f, "Down"),
             Direction::Unknown => write!(f, "Unknown"),
         }
     }

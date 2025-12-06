@@ -1,10 +1,10 @@
-use crate::domain::{analysis::Evaluate, Candlestick, Price, Timestamp};
+use crate::domain::{Candlestick, Price, Timestamp, analysis::Evaluate};
 
 #[derive(Debug, Clone)]
 pub struct PivotPoint {
     pub timestamp: Timestamp,
     pub price: Price,
-    pub is_high: bool, // true = swing high, false = swing low
+    pub is_high: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -14,6 +14,7 @@ impl Evaluate<PivotPoint> for Pivot {
     fn evaluates(&self, candles: &[Candlestick]) -> Vec<PivotPoint> {
         let n_left = self.0;
         let n_right = self.1;
+
         let n = candles.len();
         let mut swings = Vec::new();
         if n == 0 {
@@ -57,4 +58,3 @@ impl Evaluate<PivotPoint> for Pivot {
         swings
     }
 }
-

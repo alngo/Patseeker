@@ -27,21 +27,14 @@ impl Price {
     pub fn zero() -> Price {
         Price(Decimal::ZERO)
     }
+}
 
-    pub fn max(self, other: Price) -> Price {
-        if self.0 > other.0 {
-            self
-        } else {
-            other
-        }
-    }
+impl Mul<Price> for f64 {
+    type Output = Price;
 
-    pub fn min(self, other: Price) -> Price {
-        if self.0 < other.0 {
-            self
-        } else {
-            other
-        }
+    fn mul(self, rhs: Price) -> Self::Output {
+        let decimal_self = Decimal::from_f64(self).unwrap_or(Decimal::ZERO);
+        Price(decimal_self * rhs.0)
     }
 }
 
