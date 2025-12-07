@@ -6,6 +6,7 @@ mod timestamp;
 pub use candlestick::Candlestick;
 pub use datafeed::DataFeed;
 pub use price::*;
+use serde::{Deserialize, Serialize};
 pub use timestamp::Timestamp;
 
 use crate::domain::DomainError;
@@ -14,7 +15,7 @@ use crate::domain::DomainError;
 pub enum Direction {
     Up,
     Down,
-    Unknown,
+    All,
 }
 
 impl std::fmt::Display for Direction {
@@ -22,17 +23,17 @@ impl std::fmt::Display for Direction {
         match self {
             Direction::Up => write!(f, "Up"),
             Direction::Down => write!(f, "Down"),
-            Direction::Unknown => write!(f, "Unknown"),
+            Direction::All => write!(f, "All"),
         }
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Symbol {
     EURUSD,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Timeframe {
     M5,
 }

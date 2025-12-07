@@ -10,7 +10,9 @@ crate-type = ["cdylib"]
 [dependencies]
 async-trait = "0.1.89"
 chrono = "0.4.42"
+clap = { version = "4.5.53", features = ["derive"] }
 mockall = "0.13.1"
 mockall_double = "0.3.1"
 rust_decimal = { version = "1.39.0", features = ["macros"] }
+serde = { version = "1.0.228", features = ["derive"] }
 uuid = { version = "1.18.1", features = ["v4", "v8"] }

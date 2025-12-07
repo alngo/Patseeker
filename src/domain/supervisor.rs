@@ -5,6 +5,10 @@ pub use crate::domain::{
         structure::{Structure, StructureRepository},
     },
 };
+use crate::domain::{
+    Direction,
+    analysis::{Formation, Pattern},
+};
 
 pub use signal::SignalAdvisor;
 pub use structure::StructureAdvisor;
@@ -21,20 +25,31 @@ pub struct Supervisor {
 }
 
 impl Supervisor {
-    pub fn new(
-        struct_advisor: StructureAdvisor,
-        signal_advisors: Vec<SignalAdvisor>,
-    ) -> Result<Self, DomainError> {
+    pub fn new(signal_advisors: Vec<SignalAdvisor>) -> Result<Self, DomainError> {
         if signal_advisors.is_empty() {
             return Err(DomainError {
                 message: "At least one SignalAdvisor must be provided".to_string(),
             });
         }
 
+        let formations = vec![Formation::Swing(Direction::All)];
+
+        let struct_advisor = StructureAdvisor::new(formations);
+
         Ok(Self {
             struct_advisor,
             signal_advisors,
         })
+    }
+}
+
+impl Default for Supervisor {
+    fn default() -> Self {
+        let signal_advisor = SignalAdvisor::new(
+            vec![Formation::Swing(Direction::All)],
+            vec![Pattern::BullReversalBar],
+        );
+        Supervisor::new(vec![signal_advisor]).unwrap()
     }
 }
 
@@ -80,7 +95,10 @@ impl Supervisor {
     fn merge_structures(old: &[Structure], new: &[Structure]) -> Vec<Structure> {
         let mut merged = old.to_vec();
         for structure in new {
-            if !merged.iter().any(|s| s.timestamp() == structure.timestamp()) {
+            if !merged
+                .iter()
+                .any(|s| s.timestamp() == structure.timestamp())
+            {
                 merged.push(structure.clone());
             }
         }
@@ -97,24 +115,21 @@ mod tests {
 
     #[test]
     fn test_supervisor_creation_without_signal_advisors() {
-        let structure_advisor = StructureAdvisor::new(vec![]);
-        let result = Supervisor::new(structure_advisor, vec![]);
+        let result = Supervisor::new(vec![]);
         assert!(result.is_err());
     }
 
     #[test]
     fn test_supervisor_creation_with_signal_advisors() {
-        let structure_advisor = StructureAdvisor::new(vec![]);
         let signal_advisor = SignalAdvisor::new(vec![], vec![]);
-        let result = Supervisor::new(structure_advisor, vec![signal_advisor]);
+        let result = Supervisor::new(vec![signal_advisor]);
         assert!(result.is_ok());
     }
 
     #[test]
     fn test_run_analysis_with_empty_candle() {
-        let structure_advisor = StructureAdvisor::new(vec![]);
         let signal_advisor = SignalAdvisor::new(vec![], vec![]);
-        let supervisor = Supervisor::new(structure_advisor, vec![signal_advisor]).unwrap();
+        let supervisor = Supervisor::new(vec![signal_advisor]).unwrap();
         let candles = vec![];
         let structure_history = vec![];
         let result = supervisor.run_analysis(&candles, &structure_history);
@@ -123,9 +138,8 @@ mod tests {
 
     #[test]
     fn test_run_analysis_with_valid_data() {
-        let structure_advisor = StructureAdvisor::new(vec![]);
         let signal_advisor = SignalAdvisor::new(vec![], vec![]);
-        let supervisor = Supervisor::new(structure_advisor, vec![signal_advisor]).unwrap();
+        let supervisor = Supervisor::new(vec![signal_advisor]).unwrap();
         let candles = vec![
             candle!(1672531200, 100.0, 110.0, 90.0, 105.0, 1000),
             candle!(1672531500, 105.0, 115.0, 95.0, 110.0, 1500),

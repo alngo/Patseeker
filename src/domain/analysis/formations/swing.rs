@@ -9,7 +9,7 @@ use crate::domain::{
 };
 
 #[derive(Debug, Clone)]
-pub struct Swing;
+pub struct Swing(pub Direction);
 
 impl Swing {
     pub fn hybrid_filter_swings(
@@ -61,6 +61,13 @@ impl Swing {
                 }
             }
         }
+
+        confirmed.retain(|s| match self.0 {
+            Direction::Up => !s.is_high,
+            Direction::Down => s.is_high,
+            Direction::All => true,
+        });
+
         confirmed
     }
 
@@ -137,12 +144,22 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_swing() {
+    fn test_swing_up() {
         let mut candles = make_candles(100.0, 0, 200, Direction::Up);
         candles.extend(make_candles(104.0, 200, 400, Direction::Down));
         candles.extend(make_candles(98.0, 400, 600, Direction::Up));
         candles.extend(make_candles(102.0, 600, 800, Direction::Down));
-        let normalized = Swing.evaluates(&candles);
-        assert!(normalized.len() >= 3);
+        let normalized = Swing(Direction::Up).evaluates(&candles);
+        assert!(normalized.len() == 1);
+    }
+
+    #[test]
+    fn test_swing_down() {
+        let mut candles = make_candles(100.0, 0, 200, Direction::Up);
+        candles.extend(make_candles(104.0, 200, 400, Direction::Down));
+        candles.extend(make_candles(98.0, 400, 600, Direction::Up));
+        candles.extend(make_candles(102.0, 600, 800, Direction::Down));
+        let normalized = Swing(Direction::Down).evaluates(&candles);
+        assert!(normalized.len() == 1);
     }
 }

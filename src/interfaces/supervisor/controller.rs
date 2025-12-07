@@ -1,19 +1,38 @@
-use crate::domain::{DataFeed, SignalRepository, StructureRepository};
+use crate::{
+    application::{self, run_analysis},
+    domain::{Symbol, Timeframe},
+    interfaces::shared::Present,
+};
 
-pub struct SupervisorController<'a, D, R> {
-    datafeed: &'a D,
-    repositories: &'a R,
+pub struct SupervisorController<'a, S, P> {
+    supervisor_service: &'a S,
+    presenter: &'a P,
 }
 
-impl<'a, D, R> SupervisorController<'a, D, R>
+impl<'a, S, P> SupervisorController<'a, S, P>
 where
-    D: DataFeed,
-    R: StructureRepository + SignalRepository,
+    S: application::Service<run_analysis::Request, run_analysis::Result>,
+    P: Present<run_analysis::Result>,
 {
-    pub fn new(datafeed: &'a D, repositories: &'a R) -> Self {
+    pub fn new(supervisor_service: &'a S, presenter: &'a P) -> Self {
         Self {
-            datafeed,
-            repositories,
+            supervisor_service,
+            presenter,
         }
+    }
+
+    pub async fn run_analysis(
+        &self,
+        _symbol: String,
+        _timeframe: String,
+        lookback: usize,
+    ) -> <P as Present<run_analysis::Result>>::ViewModel {
+        let request = run_analysis::Request {
+            symbol: Symbol::EURUSD,
+            timeframe: Timeframe::M5,
+            lookback,
+        };
+        let result = self.supervisor_service.execute(request).await;
+        self.presenter.present(result)
     }
 }

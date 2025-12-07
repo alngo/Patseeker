@@ -1,4 +1,5 @@
 use async_trait::async_trait;
+use serde::{Deserialize, Serialize};
 
 use crate::{
     application::shared::{error::ApplicationError, use_case::UseCase},
@@ -8,12 +9,14 @@ use crate::{
     },
 };
 
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub struct Request {
     pub symbol: Symbol,
     pub timeframe: Timeframe,
     pub lookback: usize,
 }
 
+#[derive(Debug, Clone)]
 pub struct Response {
     pub structures: Vec<Structure>,
     pub signals: Vec<Signal>,
@@ -25,7 +28,7 @@ pub struct RunAnalysis<'a, M, C, S> {
     datafeed: &'a M,
     structure_repository: &'a C,
     signal_repository: &'a S,
-    supervisor: Supervisor,
+    supervisor: &'a Supervisor,
 }
 
 impl<'a, M, C, S> RunAnalysis<'a, M, C, S>
@@ -38,7 +41,7 @@ where
         datafeed: &'a M,
         structure_repository: &'a C,
         signal_repository: &'a S,
-        supervisor: Supervisor,
+        supervisor: &'a Supervisor,
     ) -> Self {
         Self {
             datafeed,

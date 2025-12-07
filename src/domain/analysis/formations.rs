@@ -14,8 +14,8 @@ pub enum Formation {
 impl Formation {
     pub fn evaluator(&self) -> Box<dyn Evaluate<Structure>> {
         match self {
-            Formation::Swing(_) => Box::new(Swing),
             Formation::Dummy => todo!(),
+            Formation::Swing(dir) => Box::new(Swing(*dir)),
         }
     }
 }
@@ -23,8 +23,8 @@ impl Formation {
 impl std::fmt::Display for Formation {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Formation::Swing(dir) => write!(f, "Swing {dir}"),
             Formation::Dummy => todo!(),
+            Formation::Swing(dir) => write!(f, "Swing {dir}"),
         }
     }
 }

@@ -112,7 +112,7 @@ impl Candlestick {
         } else if self.close < self.open {
             Direction::Down
         } else {
-            Direction::Unknown
+            Direction::All
         }
     }
 }
@@ -189,6 +189,6 @@ mod tests {
             1000.into(),
         )
         .unwrap();
-        assert_eq!(range_candle.direction(), Direction::Unknown);
+        assert_eq!(range_candle.direction(), Direction::All);
     }
 }
