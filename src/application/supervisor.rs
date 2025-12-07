@@ -1,5 +1,6 @@
 mod use_cases;
 
+use async_trait::async_trait;
 pub use use_cases::run_analysis;
 
 use crate::{
@@ -27,6 +28,7 @@ where
     }
 }
 
+#[async_trait(?Send)]
 impl<'a, D, R> Service<run_analysis::Request, run_analysis::Result> for SupervisorService<'a, D, R>
 where
     D: DataFeed,

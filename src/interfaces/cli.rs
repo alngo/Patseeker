@@ -43,7 +43,7 @@ where
 
     pub async fn run_once(&self) {
         let cli = Cli::parse();
-        self.exec_command(cli.command);
+        self.exec_command(cli.command).await;
     }
 
     /// Run in a loop until user exits
@@ -66,7 +66,7 @@ where
                 .chain(input.split_whitespace().map(|s| s.to_string()));
             let cli = Cli::parse_from(args);
 
-            self.exec_command(cli.command);
+            self.exec_command(cli.command).await;
         }
     }
 
@@ -81,6 +81,7 @@ where
                     .supervisor_controller
                     .run_analysis(symbol, timeframe, lookback)
                     .await;
+                println!("{}", res);
             }
         }
     }

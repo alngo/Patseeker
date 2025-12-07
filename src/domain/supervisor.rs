@@ -11,7 +11,7 @@ use crate::domain::{
 };
 
 pub use signal::SignalAdvisor;
-pub use structure::StructureAdvisor;
+use structure::StructureAdvisor;
 
 mod advisor;
 mod signal;
