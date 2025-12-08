@@ -25,7 +25,6 @@ pub enum Commands {
     },
 }
 
-/// Wrap CLI execution in a struct
 pub struct CliRunner<'a, S, P> {
     supervisor_controller: SupervisorController<'a, S, P>,
 }
@@ -46,12 +45,10 @@ where
         self.exec_command(cli.command).await;
     }
 
-    /// Run in a loop until user exits
     pub async fn run_loop(&self) {
         loop {
             println!("Enter command (or type 'exit' to quit):");
 
-            // Read from stdin
             let mut input = String::new();
             std::io::stdin().read_line(&mut input).unwrap();
             let input = input.trim();
@@ -60,7 +57,6 @@ where
                 break;
             }
 
-            // Re-parse arguments from the input string
             let args = std::env::args()
                 .take(1)
                 .chain(input.split_whitespace().map(|s| s.to_string()));

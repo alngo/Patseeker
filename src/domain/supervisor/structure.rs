@@ -13,6 +13,13 @@ use mockall::automock;
 #[cfg_attr(test, automock)]
 #[async_trait(?Send)]
 pub trait StructureRepository {
+    async fn save_structures(
+        &self,
+        symbol: &Symbol,
+        timeframe: &Timeframe,
+        structures: Vec<Structure>,
+    ) -> Result<(), DomainError>;
+
     async fn structures_from(
         &self,
         symbol: &Symbol,

@@ -28,7 +28,7 @@ impl std::fmt::Display for Direction {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Hash)]
 pub enum Symbol {
     EURUSD,
 }
